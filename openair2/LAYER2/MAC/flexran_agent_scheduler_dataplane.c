@@ -149,7 +149,7 @@ void flexran_apply_ue_spec_scheduling_decisions(mid_t mod_id,
 	    // If this is a new transmission
 	    if (round == 0) {
 
-			    	printf("====== i am in the if DATA PLANE\n");
+			    	
 			      // First we have to deal with the creation of the PDU based on the message instructions
 			      rlc_status.bytes_in_buffer = 0;
 			      
