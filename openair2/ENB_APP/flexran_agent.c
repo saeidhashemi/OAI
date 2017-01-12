@@ -144,7 +144,7 @@ pthread_t new_thread(void *(*f)(void *), void *b) {
  * and can interact with other itti tasks
 */
 void *flexran_agent_task(void *args){
-  printf("=========== agent task\n");
+  
   //flexran_agent_instance_t         *d = (flexran_agent_instance_t *) args;
   Protocol__FlexranMessage *msg;
   void *data;

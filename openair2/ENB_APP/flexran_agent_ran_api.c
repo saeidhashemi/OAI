@@ -34,6 +34,8 @@ void * enb[NUM_MAX_ENB];
 void * enb_ue[NUM_MAX_ENB];
 void * enb_rrc[NUM_MAX_ENB];
 
+
+
 struct rrc_eNB_ue_context_s* enb_ue_context[NUM_MAX_ENB];
 
 
@@ -501,6 +503,7 @@ int flexran_get_N_RBG(mid_t mod_id, int CC_id) {
 }
 
 int flexran_get_subframe_assignment(mid_t mod_id, int CC_id) {
+	
 	LTE_DL_FRAME_PARMS   *frame_parms;
 
 	frame_parms = mac_xface->get_lte_frame_parms(mod_id, CC_id);
@@ -546,10 +549,28 @@ int flexran_get_sib1_length(mid_t mod_id, int CC_id) {
 	return  ((eNB_RRC_INST *)enb_rrc[mod_id])->carrier[CC_id].sizeof_SIB1;
 }
 
+int flexran_get_sib_periodicity(mid_t mod_id){
+     
+   return UE_rrc_inst->Info[NB_SIG_CNX_UE].SIperiod;
+}
+
+
+int flexran_get_sib_periodicity_length(mid_t mod_id){
+
+  return UE_rrc_inst->Info[NB_SIG_CNX_UE].SIwindowsize;  
+  
+}
+
+int flexran_get_num_mbsfn(mid_t mod_id, mid_t CC_id){
+
+  return ((eNB_RRC_INST *)enb_rrc[mod_id])->carrier[CC_id].num_mbsfn_sync_area;	
+}
+
 int flexran_get_num_pdcch_symb(mid_t mod_id, int CC_id) {
   /* TODO: This should return the number of PDCCH symbols initially used by the cell CC_id */
-  return 0;
-  //(PHY_vars_UE_g[mod_id][CC_id]->lte_ue_pdcch_vars[mod_id]->num_pdcch_symbols);
+  
+   
+   return PHY_vars_UE_g[mod_id][CC_id]->pdcch_vars[mod_id]->num_pdcch_symbols;
 }
 
 

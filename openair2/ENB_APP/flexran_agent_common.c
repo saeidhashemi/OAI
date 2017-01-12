@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "flexran_agent_common.h"
 #include "flexran_agent_common_internal.h"
@@ -412,7 +413,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
 
                             //TODO DONE: Fill in with actual value, See TS 36.211, section 6.9
-                            cell_conf[i]->init_nr_pdcch_ofdm_sym = flexran_get_num_pdcch_symb(enb_id,i);
+                            cell_conf[i]->init_nr_pdcch_ofdm_sym = 1 ;//   --check inside--- flexran_get_num_pdcch_symb(enb_id, i);
                             cell_conf[i]->has_init_nr_pdcch_ofdm_sym = 1;
                             //TODO: Fill in with actual value
                              Protocol__FlexSiConfig *si_config; 
@@ -420,16 +421,16 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                              if(si_config == NULL) 
                               goto error; 
                              protocol__flex_si_config__init(si_config); 
-                             //TODO: Fill in with actual value, Frame number to apply the SI configuration 
-                             si_config->sfn = 1; 
+                             
+                             si_config->sfn =  flexran_get_sfn_sf (enb_id); // ----- wrong For the moment sfn 0 value to check ...  
                              si_config->has_sfn = 1; 
-                             //TODO: Fill in with actual value, the length of SIB1 in bytes 
+                             
                              si_config->sib1_length = flexran_get_sib1_length(enb_id,i); 
                              si_config->has_sib1_length = 1; 
-                             //TODO: Fill in with actual value, Scheduling window for all SIs in SF 
+                             
                              si_config->si_window_length = flexran_get_si_window_length(enb_id,i); 
                              si_config->has_si_window_length = 1; 
-                             //TODO: Fill in with actual value, the number of SI messages 
+                             
                              si_config->n_si_message=1; 
                              Protocol__FlexSiMessage **si_message; 
                              si_message = malloc(sizeof(Protocol__FlexSiMessage *) * si_config->n_si_message); 
@@ -440,11 +441,11 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                               if(si_message[j] == NULL) 
                                 goto error; 
                               protocol__flex_si_message__init(si_message[j]); 
-                              //TODO: Fill in with actual value, Periodicity of SI msg in radio frames 
-                              si_message[j]->periodicity = 1;       //SIPeriod 
+
+                              si_message[j]->periodicity = flexran_get_sib_periodicity(mod_id);   // ----check inside-----
                               si_message[j]->has_periodicity = 1; 
-                              //TODO: Fill in with actual value, rhe length of the SI message in bytes 
-                              si_message[j]->length = 10; 
+                              
+                              si_message[j]->length = flexran_get_sib_periodicity_length(mod_id);; 
                               si_message[j]->has_length = 1; 
                              } 
                              if(si_config->n_si_message > 0){ 
@@ -500,14 +501,14 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       }
 
                       cell_conf[i]->has_duplex_mode = 1;
-                      //TODO DONE: Fill in with actual value, DL/UL subframe assignment. TDD only
+                      
                       cell_conf[i]->subframe_assignment = flexran_get_subframe_assignment(enb_id, i);
                       cell_conf[i]->has_subframe_assignment = 1;
-                      //TODO DONE: Fill in with actual value, TDD only. See TS 36.211, table 4.2.1
+                      
                       cell_conf[i]->special_subframe_patterns = flexran_get_special_subframe_assignment(enb_id,i);
                       cell_conf[i]->has_special_subframe_patterns = 1;
-                      //TODO: Fill in with actual value, The MBSFN radio frame period
-                      cell_conf[i]->n_mbsfn_subframe_config_rfperiod = 0;
+                      
+                      cell_conf[i]->n_mbsfn_subframe_config_rfperiod = flexran_get_num_mbsfn(mod_id);
 
                       uint32_t *elem_rfperiod;
                       elem_rfperiod = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_rfperiod);
@@ -520,9 +521,8 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       }
 
                       cell_conf[i]->mbsfn_subframe_config_rfperiod = elem_rfperiod;
-                      
-                      //TODO: Fill in with actual value, The MBSFN radio frame offset
-                      cell_conf[i]->n_mbsfn_subframe_config_rfoffset = 0;
+                                            
+                      cell_conf[i]->n_mbsfn_subframe_config_rfoffset = flexran_get_num_mbsfn(mod_id);
                       uint32_t *elem_rfoffset;
                       elem_rfoffset = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_rfoffset);
                       if(elem_rfoffset == NULL)
@@ -534,8 +534,8 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       }
                       cell_conf[i]->mbsfn_subframe_config_rfoffset = elem_rfoffset;
                       
-                      //TODO: Fill in with actual value, Bitmap indicating the MBSFN subframes
-                      cell_conf[i]->n_mbsfn_subframe_config_sfalloc = 0;
+                      
+                      cell_conf[i]->n_mbsfn_subframe_config_sfalloc = flexran_get_num_mbsfn(mod_id, i ); // i index is coresponds to CC_id 
                       uint32_t *elem_sfalloc;
                       elem_sfalloc = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_sfalloc);
 
@@ -891,7 +891,7 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
           ue_config_reply_msg->ue_config = ue_config;
   }
 
-  
+
   *msg = malloc(sizeof(Protocol__FlexranMessage));
   if (*msg == NULL)
     goto error;
@@ -1344,21 +1344,23 @@ int flexran_agent_control_delegation(mid_t mod_id, const void *params, Protocol_
 
   Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
   Protocol__FlexControlDelegation *control_delegation_msg = input->control_delegation_msg;
-
+  char lib_name[120];
+  char target[512];
+  
   uint32_t delegation_type = control_delegation_msg->delegation_type;
 
-  int i;
+  int status;
   
   struct timespec vartime = timer_start();
   
   //Write the payload lib into a file in the cache and load the lib
-  char lib_name[120];
-  char target[512];
+
   snprintf(lib_name, sizeof(lib_name), "/%s.so", control_delegation_msg->name);
   strcpy(target, local_cache);
   strcat(target, lib_name);
 
-  
+  status = mkdir( local_cache, S_IRWXU | S_IRWXG | S_IRWXO);
+
   FILE *f;
   f = fopen(target, "wb");
   fwrite(control_delegation_msg->payload.data, control_delegation_msg->payload.len, 1, f);
