@@ -228,6 +228,8 @@ typedef struct {
    
   flexran_protocol_version_t version;
    
+  flexran_agent_info_t agent_info;
+
   flexran_agent_control_module_t cm_capabilities[FLEXRAN_AGENT_MAX];
  
 } flexran_agent_instance_t;

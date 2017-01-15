@@ -175,6 +175,7 @@ err_code_t flexran_agent_disable_cont_mac_stats_update(mid_t mod_id) {
  ***********************/
 
 
+
 int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg){
 
   // TODO: Must deal with sanitization of input
@@ -233,15 +234,18 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                             report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t) * report_config.nr_ue);
                             if (report_config.ue_report_type == NULL) {
                                       // TODO: Add appropriate error code
-
+                                      
                                       err_code = -100;
                                       goto error;
                             }
+
                             for (i = 0; i < report_config.nr_ue; i++) {
  
                                     	report_config.ue_report_type[i].ue_rnti = flexran_get_ue_crnti(enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].crnti;
                                     	report_config.ue_report_type[i].ue_report_flags = ue_flags;
                             }
+
+
                             //Set the number of CCs and create a list with the cell stats configs
                             report_config.nr_cc = MAX_NUM_CCs;
                             report_config.cc_report_type = (cc_report_type_t *) malloc(sizeof(cc_report_type_t) * report_config.nr_cc);
@@ -251,31 +255,35 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                                     	goto error;
                             }
                             for (i = 0; i < report_config.nr_cc; i++) {
-                                  	//TODO: Must fill in the proper cell ids
-                                  	report_config.cc_report_type[i].cc_id = i;
+                                  	
+                                  	report_config.cc_report_type[i].cc_id = flexran_get_CC_ids (enb_id, report_config.nr_ue); 
                                   	report_config.cc_report_type[i].cc_report_flags = c_flags;
                             }
+
+
                             /* Check if request was periodical */
                             if (comp_req->report_frequency == PROTOCOL__FLEX_STATS_REPORT_FREQ__FLSRF_PERIODICAL) {
  
                                       	/* Create a one off flexran message as an argument for the periodical task */
                                       	Protocol__FlexranMessage *timer_msg;
                                       	stats_request_config_t request_config;
+
                                       	request_config.report_type = PROTOCOL__FLEX_STATS_TYPE__FLST_COMPLETE_STATS;
                                       	request_config.report_frequency = PROTOCOL__FLEX_STATS_REPORT_FREQ__FLSRF_ONCE;
                                       	request_config.period = 0;
+
                                       	/* Need to make sure that the ue flags are saved (Bug) */
-                                      	if (report_config.nr_ue == 0) {
-                                            	  report_config.nr_ue = 1;
-                                            	  report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
-                                            	   if (report_config.ue_report_type == NULL) {
-                                                  	     // TODO: Add appropriate error code
-                                                  	     err_code = -100;
-                                                  	     goto error;
-                                            	   }
-                                            	   report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
-                                            	   report_config.ue_report_type[0].ue_report_flags = ue_flags;
-                                        	}
+                                      	// if (report_config.nr_ue == 0) {
+                                       //      	  report_config.nr_ue = 1;
+                                       //      	  report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
+                                       //      	   if (report_config.ue_report_type == NULL) {
+                                       //            	     // TODO: Add appropriate error code
+                                       //            	     err_code = -100;
+                                       //            	     goto error;
+                                       //      	   }
+                                       //      	   report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
+                                       //      	   report_config.ue_report_type[0].ue_report_flags = ue_flags;
+                                       //  	}
 
                                         	request_config.config = &report_config;
                                         	flexran_agent_mac_stats_request(enb_id, xid, &request_config, &timer_msg);
@@ -307,22 +315,23 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                                       	  set up a new one*/
  
                                       	flexran_agent_disable_cont_mac_stats_update(mod_id);
+                                        
                                       	stats_request_config_t request_config;
                                       	request_config.report_type = PROTOCOL__FLEX_STATS_TYPE__FLST_COMPLETE_STATS;
                                       	request_config.report_frequency = PROTOCOL__FLEX_STATS_REPORT_FREQ__FLSRF_ONCE;
                                       	request_config.period = 0;
                                       	/* Need to make sure that the ue flags are saved (Bug) */
-                                      	if (report_config.nr_ue == 0) {
-                                      	  report_config.nr_ue = 1;
-                                      	  report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
-                                      	  if (report_config.ue_report_type == NULL) {
-                                      	    // TODO: Add appropriate error code
-                                      	    err_code = -100;
-                                      	    goto error;
-                                      	  }
-                                      	  report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
-                                      	  report_config.ue_report_type[0].ue_report_flags = ue_flags;
-                                      	}
+                                      	// if (report_config.nr_ue == 0) {
+                                      	//   report_config.nr_ue = 1;
+                                      	//   report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
+                                      	//   if (report_config.ue_report_type == NULL) {
+                                      	//     // TODO: Add appropriate error code
+                                      	//     err_code = -100;
+                                      	//     goto error;
+                                      	//   }
+                                      	//   report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
+                                      	//   report_config.ue_report_type[0].ue_report_flags = ue_flags;
+                                      	// }
                                       	request_config.config = &report_config;
                                       	flexran_agent_enable_cont_mac_stats_update(enb_id, xid, &request_config);
                               }
@@ -432,7 +441,7 @@ int flexran_agent_mac_stats_request(mid_t mod_id,
             complete_stats->has_sf = 1;
             complete_stats->has_cell_report_flags = 1;
             complete_stats->has_ue_report_flags = 1;
-
+            // TODO :flags for each report types 
             if (report_config->config->nr_cc > 0) {
                   complete_stats->cell_report_flags = report_config->config->cc_report_type[0].cc_report_flags;
             }
@@ -580,6 +589,8 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
             goto error;
 
           for (i = 0; i < report_config->nr_ue; i++) {
+
+
                 ue_report[i] = malloc(sizeof(Protocol__FlexUeStatsReport));
                 protocol__flex_ue_stats_report__init(ue_report[i]);
                 ue_report[i]->rnti = report_config->ue_report_type[i].ue_rnti;
@@ -590,21 +601,22 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
 
                 /* Check flag for creation of buffer status report */
                 if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_BSR) {
-                      	ue_report[i]->n_bsr = 4;
+                      //TODO should be automated
+                      	ue_report[i]->n_bsr = 4; 
                       	uint32_t *elem;
                       	elem = (uint32_t *) malloc(sizeof(uint32_t)*ue_report[i]->n_bsr);
                       	if (elem == NULL)
                       	       goto error;
                       	for (j = 0; j++; j < ue_report[i]->n_bsr) {
-                            	  // NN: we need to know the cc_id here, consider the first one
+                            	  // NN: we need to know the cc_id here, consider the first one 
                             	  elem[j] = flexran_get_ue_bsr (enb_id, i, j); 
                       	}
 
                       	ue_report[i]->bsr = elem;
                 }
-
-                /* Check flag for creation of PRH report */
-                if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PRH) {
+                
+                /* Check flag for creation of PHR report */
+                if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PHR) {
                       	ue_report[i]->phr = flexran_get_ue_phr (enb_id, i); // eNB_UE_list->UE_template[UE_PCCID(enb_id,i)][i].phr_info;
                       	ue_report[i]->has_phr = 1;
                 }
@@ -619,27 +631,29 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
 
                       	// NN: see LAYER2/openair2_proc.c for rlc status
                       	for (j = 0; j < ue_report[i]->n_rlc_report; j++) {
-                      	  rlc_reports[j] = malloc(sizeof(Protocol__FlexRlcBsr));
-                      	  if (rlc_reports[j] == NULL)
-                      	     goto error;
-                      	  protocol__flex_rlc_bsr__init(rlc_reports[j]);
-                      	  rlc_reports[j]->lc_id = j+1;
-                      	  rlc_reports[j]->has_lc_id = 1;
-                      	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id,i,j+1);
-                      	  rlc_reports[j]->has_tx_queue_size = 1;
 
-                      	  //TODO:Set tx queue head of line delay in ms
-                      	  rlc_reports[j]->tx_queue_hol_delay = 100;
-                      	  rlc_reports[j]->has_tx_queue_hol_delay = 0;
-                      	  //TODO:Set retransmission queue size in bytes
-                      	  rlc_reports[j]->retransmission_queue_size = 10;
-                      	  rlc_reports[j]->has_retransmission_queue_size = 0;
-                      	  //TODO:Set retransmission queue head of line delay in ms
-                      	  rlc_reports[j]->retransmission_queue_hol_delay = 100;
-                      	  rlc_reports[j]->has_retransmission_queue_hol_delay = 0;
-                      	  //TODO:Set current size of the pending message in bytes
-                      	  rlc_reports[j]->status_pdu_size = 100;
-                      	  rlc_reports[j]->has_status_pdu_size = 0;
+                          	  rlc_reports[j] = malloc(sizeof(Protocol__FlexRlcBsr));
+                          	  if (rlc_reports[j] == NULL)
+                          	     goto error;
+                          	  protocol__flex_rlc_bsr__init(rlc_reports[j]);
+                          	  rlc_reports[j]->lc_id = j+1;
+                          	  rlc_reports[j]->has_lc_id = 1;
+                          	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id,i,j+1);
+                          	  rlc_reports[j]->has_tx_queue_size = 1;
+
+                          	  //TODO:Set tx queue head of line delay in ms
+                          	  rlc_reports[j]->tx_queue_hol_delay = 100;
+                          	  rlc_reports[j]->has_tx_queue_hol_delay = 0;
+                          	  //TODO:Set retransmission queue size in bytes
+                          	  rlc_reports[j]->retransmission_queue_size = 10;
+                          	  rlc_reports[j]->has_retransmission_queue_size = 0;
+                          	  //TODO:Set retransmission queue head of line delay in ms
+                          	  rlc_reports[j]->retransmission_queue_hol_delay = 100;
+                          	  rlc_reports[j]->has_retransmission_queue_hol_delay = 0;
+                          	  //TODO:Set current size of the pending message in bytes
+                          	  rlc_reports[j]->status_pdu_size = 100;
+                          	  rlc_reports[j]->has_status_pdu_size = 0;
+
                       	}
                       	// Add RLC buffer status reports to the full report
                       	if (ue_report[i]->n_rlc_report > 0)
@@ -676,61 +690,63 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                       	csi_reports = malloc(sizeof(Protocol__FlexDlCsi *)*dl_report->n_csi_report);
                       	if (csi_reports == NULL)
                       	  goto error;
+
                       	for (j = 0; j < dl_report->n_csi_report; j++) {
-                      	  csi_reports[j] = malloc(sizeof(Protocol__FlexDlCsi));
-                      	  if (csi_reports[j] == NULL)
-                      	    goto error;
-                      	  protocol__flex_dl_csi__init(csi_reports[j]);
-                      	  //The servCellIndex for this report
-                      	  csi_reports[j]->serv_cell_index = j;
-                      	  csi_reports[j]->has_serv_cell_index = 1;
-                      	  //The rank indicator value for this cc
-                      	  csi_reports[j]->ri = flexran_get_current_RI(enb_id,i,j);
-                      	  csi_reports[j]->has_ri = 1;
-                      	  //TODO: the type of CSI report based on the configuration of the UE
-                      	  //For now we only support type P10, which only needs a wideband value
-                      	  //The full set of types can be found in stats_common.pb-c.h and
-                      	  //in the FlexRAN specifications
-                          csi_reports[j]->type =  PROTOCOL__FLEX_CSI_TYPE__FLCSIT_P10;
-                      		  csi_reports[j]->has_type = 1;
-                      		  csi_reports[j]->report_case = PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI;
-                      		  if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI){
-                      			  Protocol__FlexCsiP10 *csi10;
-                      			  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
-                      			  if (csi10 == NULL)
-                      				goto error;
-                      			  protocol__flex_csi_p10__init(csi10);
-                      			  //TODO: set the wideband value
-                      			  // NN: this is also depends on cc_id
-                      			  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
-                      			  csi10->has_wb_cqi = 1;
-                      			  //Add the type of measurements to the csi report in the proper union type
-                      			  csi_reports[j]->p10csi = csi10;
-                      		  }
-                      		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P11CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P20CSI){
+                          	  csi_reports[j] = malloc(sizeof(Protocol__FlexDlCsi));
+                          	  if (csi_reports[j] == NULL)
+                          	    goto error;
+                          	  protocol__flex_dl_csi__init(csi_reports[j]);
+                          	  //The servCellIndex for this report
+                          	  csi_reports[j]->serv_cell_index = j;
+                          	  csi_reports[j]->has_serv_cell_index = 1;
+                          	  //The rank indicator value for this cc
+                          	  csi_reports[j]->ri = flexran_get_current_RI(enb_id,i,j);
+                          	  csi_reports[j]->has_ri = 1;
+                          	  //TODO: the type of CSI report based on the configuration of the UE
+                          	  //For now we only support type P10, which only needs a wideband value
+                          	  //The full set of types can be found in stats_common.pb-c.h and
+                          	  //in the FlexRAN specifications
+                              csi_reports[j]->type =  PROTOCOL__FLEX_CSI_TYPE__FLCSIT_P10;
+                          		  csi_reports[j]->has_type = 1;
+                          		  csi_reports[j]->report_case = PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI;
+                          		  if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI){
+                          			  Protocol__FlexCsiP10 *csi10;
+                          			  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
+                          			  if (csi10 == NULL)
+                          				goto error;
+                          			  protocol__flex_csi_p10__init(csi10);
+                          			  //TODO: set the wideband value
+                          			  // NN: this is also depends on cc_id
+                          			  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
+                          			  csi10->has_wb_cqi = 1;
+                          			  //Add the type of measurements to the csi report in the proper union type
+                          			  csi_reports[j]->p10csi = csi10;
+                          		  }
+                          		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P11CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P21CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P20CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A12CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P21CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A22CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A12CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A20CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A22CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A30CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A20CSI){
 
-                        		  }
-                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A31CSI){
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A30CSI){
 
-                        		  }
+                            		  }
+                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A31CSI){
+
+                            		  }
                         		}
                           	//Add the csi reports to the full DL CQI report
                           	dl_report->csi_report = csi_reports;
@@ -754,24 +770,27 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	p_info = malloc(sizeof(Protocol__FlexPagingInfo *) * paging_report->n_paging_info);
                           	if (p_info == NULL)
                           	  goto error;
+
                           	for (j = 0; j < paging_report->n_paging_info; j++) {
-                          	  p_info[j] = malloc(sizeof(Protocol__FlexPagingInfo));
-                          	  if(p_info[j] == NULL)
-                          	    goto error;
-                          	  protocol__flex_paging_info__init(p_info[j]);
-                                      	  //TODO: Set paging index. This index is the same that will be used for the scheduling of the
-                          	  //paging message by the controller
-                          	  p_info[j]->paging_index = 10;
-                          	  p_info[j]->has_paging_index = 0;
-                          	  //TODO:Set the paging message size
-                          	  p_info[j]->paging_message_size = 100;
-                          	  p_info[j]->has_paging_message_size = 0;
-                          	  //TODO: Set the paging subframe
-                          	  p_info[j]->paging_subframe = 10;
-                          	  p_info[j]->has_paging_subframe = 0;
-                          	  //TODO: Set the carrier index for the pending paging message
-                          	  p_info[j]->carrier_index = 0;
-                          	  p_info[j]->has_carrier_index = 0;
+
+                                	  p_info[j] = malloc(sizeof(Protocol__FlexPagingInfo));
+                                	  if(p_info[j] == NULL)
+                                	    goto error;
+                                	  protocol__flex_paging_info__init(p_info[j]);
+                                            	  //TODO: Set paging index. This index is the same that will be used for the scheduling of the
+                                	  //paging message by the controller
+                                	  p_info[j]->paging_index = 10;
+                                	  p_info[j]->has_paging_index = 0;
+                                	  //TODO:Set the paging message size
+                                	  p_info[j]->paging_message_size = 100;
+                                	  p_info[j]->has_paging_message_size = 0;
+                                	  //TODO: Set the paging subframe
+                                	  p_info[j]->paging_subframe = 10;
+                                	  p_info[j]->has_paging_subframe = 0;
+                                	  //TODO: Set the carrier index for the pending paging message
+                                	  p_info[j]->carrier_index = 0;
+                                	  p_info[j]->has_carrier_index = 0;
+
                           	}
                           	//Add all paging info to the paging buffer rerport
                           	paging_report->paging_info = p_info;
@@ -779,8 +798,8 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	ue_report[i]->pbr = paging_report;
                   }
 
-            /* Check flag for creation of UL CQI report */
-            if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_UL_CQI) {
+                  /* Check flag for creation of UL CQI report */
+                 if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_UL_CQI) {
 
                     	//Fill in the full UL CQI report of the UE
                     	Protocol__FlexUlCqiReport *full_ul_report;
@@ -846,12 +865,13 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  //  Add full UL CQI report to the UE report
                           	  ue_report[i]->ul_cqi_report = full_ul_report;
                     	}
-            }
-    }
+                 }
+          }
 
-    /* Add list of all UE reports to the message */
-    stats_reply_msg->ue_report = ue_report;
-  }
+          /* Add list of all UE reports to the message */
+          stats_reply_msg->ue_report = ue_report;
+
+      }
 
   /* Allocate memory for list of cell reports */
   if (report_config->nr_cc > 0) {

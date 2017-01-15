@@ -182,6 +182,11 @@ int flexran_get_duplex_mode(mid_t mod_id, int CC_id);
 /* Get the SI window length */
 long flexran_get_si_window_length(mid_t mod_id, int CC_id);
 
+/* Get SIB periodicity from RRC typedef*/
+int flexran_get_sib_periodicity(mid_t);
+
+
+
 /* Get the number of PDCCH symbols configured for the cell */
 int flexran_get_num_pdcch_symb(mid_t mod_id, int CC_id);
 

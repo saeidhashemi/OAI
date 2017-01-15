@@ -33,6 +33,11 @@
 void * enb[NUM_MAX_ENB];
 void * enb_ue[NUM_MAX_ENB];
 void * enb_rrc[NUM_MAX_ENB];
+void * enb_ue_rrc[NUM_MAX_ENB];
+
+
+// Internal variables of EnodeB typedefs
+int CC_id[MAX_NUM_CCs];
 
 
 
@@ -46,6 +51,7 @@ void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
     enb[mod_id] =  (void *)&eNB_mac_inst[mod_id];
     enb_ue[mod_id] = (void *)&eNB_mac_inst[mod_id].UE_list;
     enb_rrc[mod_id] = (void *)&eNB_rrc_inst[mod_id];
+    enb_ue_rrc[mod_id]  = (void *)&UE_rrc_inst[mod_id];
     break;
   default :
     goto error;
@@ -56,6 +62,38 @@ void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
  error:
   LOG_E(FLEXRAN_AGENT, "unknown RAN name %d\n", ran);
 }
+
+/*
+ * Usefull internl APIs functions
+ *
+  */
+
+
+
+
+void flexran_get_CC_ids (mid_t mod_id, mid_t MAX_UE) {
+
+  for (int i = 0; i < MAX_UE; i++) {
+
+
+        if (MAX_NUM_CCs < MAX_UE){
+
+            CC_id[i] = ((eNB_MAC_INST *)enb[mod_id])->UE_list.ordered_CCids[i][i];
+
+        }
+        else {
+
+            LOG_E(FLEXRAN_AGENT, "Error In Internal functions");
+ 
+        }
+
+        
+
+
+  }
+}
+
+
 
 int flexran_get_current_time_ms (mid_t mod_id, int subframe_flag){
 
@@ -550,8 +588,8 @@ int flexran_get_sib1_length(mid_t mod_id, int CC_id) {
 }
 
 int flexran_get_sib_periodicity(mid_t mod_id){
-     
-   return UE_rrc_inst->Info[NB_SIG_CNX_UE].SIperiod;
+   
+   // return 0;//((UE_RRC_INST *)enb_ue_rrc[mod_id])->Info[0].SIperiod;
 }
 
 
@@ -569,8 +607,10 @@ int flexran_get_num_mbsfn(mid_t mod_id, mid_t CC_id){
 int flexran_get_num_pdcch_symb(mid_t mod_id, int CC_id) {
   /* TODO: This should return the number of PDCCH symbols initially used by the cell CC_id */
   
-   
-   return PHY_vars_UE_g[mod_id][CC_id]->pdcch_vars[mod_id]->num_pdcch_symbols;
+   LTE_UE_PDCCH ue;
+
+ 
+   return ue.num_pdcch_symbols;
 }
 
 
@@ -647,29 +687,29 @@ int flexran_get_ue_aggregated_max_bitrate_ul (mid_t mod_id, mid_t ue_id) {
 
 int flexran_get_half_duplex(mid_t ue_id) {
   // TODO
-	//int halfduplex = 0;
-	//int bands_to_scan = ((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.count;
-	//for (int i =0; i < bands_to_scan; i++){
-		//if(((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.array[i]->halfDuplex > 0)
-		//	halfduplex = 1;
-	//}
-	//return halfduplex;
+	int halfduplex = 0;
+	int bands_to_scan = ((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.count;
+	for (int i =0; i < bands_to_scan; i++){
+		if(((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.array[i]->halfDuplex > 0)
+			halfduplex = 1;
+	}
+	return halfduplex;
 }
 
 
 int flexran_get_type2_sb_1(mid_t ue_id) {
 	//TODO:Get proper value
-	//uint8_t temp = 0;
-	//temp = (((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->featureGroupIndicators->buf);
-	//return (temp & ( 1 << (11)));
+	uint8_t temp = 0;
+	temp = (((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->featureGroupIndicators->buf);
+	return (temp & ( 1 << (11)));
 }
 
 
 int flexran_get_res_alloc_type1(mid_t ue_id) {
 	//TODO:Get proper value
-	//uint8_t temp = 0;
-	//temp = (((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->featureGroupIndicators->buf);
-	//return (temp & ( 1 << (30)));
+	uint8_t temp = 0;
+	temp = (((UE_RRC_INST *)enb_ue_rrc[ue_id])->UECap->UE_EUTRA_Capability->featureGroupIndicators->buf);
+	return (temp & ( 1 << (30)));
 }
 
 int flexran_get_ue_transmission_mode(mid_t mod_id, mid_t ue_id) {

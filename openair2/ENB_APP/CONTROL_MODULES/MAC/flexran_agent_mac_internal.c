@@ -61,7 +61,7 @@ Protocol__FlexranMessage * flexran_agent_generate_diff_mac_stats_report(Protocol
   /*Go through each RNTI of the new report and see if it exists in the old one*/
   for (i = 0; i < new_report->n_ue_report; i++) {
 
-        for (j = 0; j < old_report->n_ue_report; i++) {
+        for (j = 0; j < old_report->n_ue_report; j++) {
              if (new_report->ue_report[i]->rnti == old_report->ue_report[j]->rnti) {
                   	ue_found = 1;
                 	/*Need to check if something changed*/
@@ -87,7 +87,7 @@ Protocol__FlexranMessage * flexran_agent_generate_diff_mac_stats_report(Protocol
   
   /*Go through each cell of the new report and see if it exists in the old one*/
   for (i = 0; i < new_report->n_cell_report; i++) {
-    for (j = 0; j < old_report->n_cell_report; i++) {
+    for (j = 0; j < old_report->n_cell_report; j++) {
      if (new_report->cell_report[i]->carrier_index == old_report->cell_report[j]->carrier_index) {
   	cell_found = 1;
 	/*Need to check if something changed*/
@@ -185,7 +185,7 @@ Protocol__FlexUeStatsReport * copy_ue_stats_report(Protocol__FlexUeStatsReport *
     }
   }
 
-  if (copy->flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PRH) {
+  if (copy->flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PHR) {
     copy->has_phr = original->has_phr;
     copy->phr = original->phr;
   }

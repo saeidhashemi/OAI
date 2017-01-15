@@ -413,7 +413,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
 
                             //TODO DONE: Fill in with actual value, See TS 36.211, section 6.9
-                            cell_conf[i]->init_nr_pdcch_ofdm_sym = 1 ;//   --check inside--- flexran_get_num_pdcch_symb(enb_id, i);
+                            cell_conf[i]->init_nr_pdcch_ofdm_sym = flexran_get_num_pdcch_symb(enb_id, i); // Inside should be modified ...
                             cell_conf[i]->has_init_nr_pdcch_ofdm_sym = 1;
                             //TODO: Fill in with actual value
                              Protocol__FlexSiConfig *si_config; 
@@ -442,10 +442,10 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                                 goto error; 
                               protocol__flex_si_message__init(si_message[j]); 
 
-                              si_message[j]->periodicity = flexran_get_sib_periodicity(mod_id);   // ----check inside-----
+                              si_message[j]->periodicity = 1; //flexran_get_sib_periodicity(mod_id);   // ----check inside-----
                               si_message[j]->has_periodicity = 1; 
                               
-                              si_message[j]->length = flexran_get_sib_periodicity_length(mod_id);; 
+                              si_message[j]->length = 1; //flexran_get_sib_periodicity_length(mod_id);; 
                               si_message[j]->has_length = 1; 
                              } 
                              if(si_config->n_si_message > 0){ 
@@ -508,7 +508,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       cell_conf[i]->special_subframe_patterns = flexran_get_special_subframe_assignment(enb_id,i);
                       cell_conf[i]->has_special_subframe_patterns = 1;
                       
-                      cell_conf[i]->n_mbsfn_subframe_config_rfperiod = flexran_get_num_mbsfn(mod_id);
+                      cell_conf[i]->n_mbsfn_subframe_config_rfperiod = 1; //flexran_get_num_mbsfn(mod_id);
 
                       uint32_t *elem_rfperiod;
                       elem_rfperiod = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_rfperiod);
@@ -522,7 +522,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       cell_conf[i]->mbsfn_subframe_config_rfperiod = elem_rfperiod;
                                             
-                      cell_conf[i]->n_mbsfn_subframe_config_rfoffset = flexran_get_num_mbsfn(mod_id);
+                      cell_conf[i]->n_mbsfn_subframe_config_rfoffset = 1; //flexran_get_num_mbsfn(mod_id);
                       uint32_t *elem_rfoffset;
                       elem_rfoffset = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_rfoffset);
                       if(elem_rfoffset == NULL)
@@ -535,7 +535,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       cell_conf[i]->mbsfn_subframe_config_rfoffset = elem_rfoffset;
                       
                       
-                      cell_conf[i]->n_mbsfn_subframe_config_sfalloc = flexran_get_num_mbsfn(mod_id, i ); // i index is coresponds to CC_id 
+                      cell_conf[i]->n_mbsfn_subframe_config_sfalloc = 1; //flexran_get_num_mbsfn(mod_id, i ); // i index is coresponds to CC_id 
                       uint32_t *elem_sfalloc;
                       elem_sfalloc = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_sfalloc);
 
@@ -763,19 +763,19 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
                     protocol__flex_ue_capabilities__init(capabilities);
                     //TODO: Set half duplex (FDD operation)
                     capabilities->has_half_duplex = 0;
-                    capabilities->half_duplex = 0;//flexran_get_half_duplex(i);
+                    capabilities->half_duplex = flexran_get_half_duplex(i);
                     //TODO: Set intra-frame hopping flag
                     capabilities->has_intra_sf_hopping = 0;
                     capabilities->intra_sf_hopping = 1;//flexran_get_intra_sf_hopping(i);
                     //TODO: Set support for type 2 hopping with n_sb > 1
                     capabilities->has_type2_sb_1 = 0;
-                    capabilities->type2_sb_1 = 1;//flexran_get_type2_sb_1(i);
+                    capabilities->type2_sb_1 = flexran_get_type2_sb_1(i);
                     //TODO: Set ue category
                     capabilities->has_ue_category = 0;
                     capabilities->ue_category = 1;//flexran_get_ue_category(i);
                     //TODO: Set UE support for resource allocation type 1
                     capabilities->has_res_alloc_type1 = 0;
-                    capabilities->res_alloc_type1 = 1;//flexran_get_res_alloc_type1(i);
+                    capabilities->res_alloc_type1 = flexran_get_res_alloc_type1(i);
                     //Set the capabilites to the message
                     ue_config[i]->capabilities = capabilities;
 

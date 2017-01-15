@@ -955,9 +955,11 @@ typedef struct {
 
 } eNB_MAC_INST;
 
-/* 
+
+
+/* **********************************
  * UE part 
- */ 
+ * **********************************/
 
 /*!\brief UE layer 2 status */
 typedef enum {

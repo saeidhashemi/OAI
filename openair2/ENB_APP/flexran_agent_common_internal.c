@@ -36,7 +36,7 @@ int apply_reconfiguration_policy(mid_t mod_id, const char *policy, size_t policy
 
   yaml_parser_t parser;
   yaml_event_t event;
-  printf("========== apply_reconfiguration_policy\n");
+  
   int done = 0;
   int mapping_started = 0;
 
@@ -65,7 +65,7 @@ int apply_reconfiguration_policy(mid_t mod_id, const char *policy, size_t policy
     case YAML_SCALAR_EVENT:
       // Check the system name and call the proper handler
       if (strcmp(event.data.scalar.value, "mac") == 0) {
-        printf("========== apply apply_reconfiguration_policy mac\n");
+        
 	LOG_D(ENB_APP, "This is intended for the mac system\n");
 	// Call the mac handler
 	if (parse_mac_config(mod_id, &parser) == -1) {
