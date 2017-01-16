@@ -59,7 +59,7 @@ message flex_csi_p21 {
 	repeated uint32 wb_cqi = 1;
 	optional uint32 wb_pmi = 2;
 	repeated uint32 sb_cqi = 3;
-	optional uint32 badwidth_part_index = 4;
+	optional uint32 bandwidth_part_index = 4;
 	optional uint32 sb_index = 5;
 }
 

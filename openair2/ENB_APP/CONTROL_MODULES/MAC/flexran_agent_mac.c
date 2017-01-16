@@ -256,7 +256,7 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                             }
                             for (i = 0; i < report_config.nr_cc; i++) {
                                   	
-                                  	report_config.cc_report_type[i].cc_id = flexran_get_CC_ids (enb_id, report_config.nr_ue); 
+                                  	report_config.cc_report_type[i].cc_id = flexran_get_map_CC_id_rnti_downlink (enb_id, i, report_config.ue_report_type[i].ue_rnti); 
                                   	report_config.cc_report_type[i].cc_report_flags = c_flags;
                             }
 
@@ -607,7 +607,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                       	elem = (uint32_t *) malloc(sizeof(uint32_t)*ue_report[i]->n_bsr);
                       	if (elem == NULL)
                       	       goto error;
-                      	for (j = 0; j++; j < ue_report[i]->n_bsr) {
+                      	for (j = 0; j < ue_report[i]->n_bsr; j++) {
                             	  // NN: we need to know the cc_id here, consider the first one 
                             	  elem[j] = flexran_get_ue_bsr (enb_id, i, j); 
                       	}
@@ -638,11 +638,11 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  protocol__flex_rlc_bsr__init(rlc_reports[j]);
                           	  rlc_reports[j]->lc_id = j+1;
                           	  rlc_reports[j]->has_lc_id = 1;
-                          	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id,i,j+1);
+                          	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id, i, j+1, "bytes_buffer");
                           	  rlc_reports[j]->has_tx_queue_size = 1;
 
                           	  //TODO:Set tx queue head of line delay in ms
-                          	  rlc_reports[j]->tx_queue_hol_delay = 100;
+                          	  rlc_reports[j]->tx_queue_hol_delay = flexran_get_tx_queue_size(enb_id, i, j+1, "head_line");;
                           	  rlc_reports[j]->has_tx_queue_hol_delay = 0;
                           	  //TODO:Set retransmission queue size in bytes
                           	  rlc_reports[j]->retransmission_queue_size = 10;
@@ -650,8 +650,8 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  //TODO:Set retransmission queue head of line delay in ms
                           	  rlc_reports[j]->retransmission_queue_hol_delay = 100;
                           	  rlc_reports[j]->has_retransmission_queue_hol_delay = 0;
-                          	  //TODO:Set current size of the pending message in bytes
-                          	  rlc_reports[j]->status_pdu_size = 100;
+                          	  //TODO DONE:Set current size of the pending message in bytes
+                          	  rlc_reports[j]->status_pdu_size = flexran_get_tx_queue_size(enb_id, i, j+1, "pdu_buffer");;
                           	  rlc_reports[j]->has_status_pdu_size = 0;
 
                       	}
@@ -710,30 +710,107 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                               csi_reports[j]->type =  PROTOCOL__FLEX_CSI_TYPE__FLCSIT_P10;
                           		  csi_reports[j]->has_type = 1;
                           		  csi_reports[j]->report_case = PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI;
+
                           		  if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI){
-                          			  Protocol__FlexCsiP10 *csi10;
-                          			  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
-                          			  if (csi10 == NULL)
-                          				goto error;
-                          			  protocol__flex_csi_p10__init(csi10);
-                          			  //TODO: set the wideband value
-                          			  // NN: this is also depends on cc_id
-                          			  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
-                          			  csi10->has_wb_cqi = 1;
-                          			  //Add the type of measurements to the csi report in the proper union type
-                          			  csi_reports[j]->p10csi = csi10;
+
+                              			  Protocol__FlexCsiP10 *csi10;
+                              			  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
+                              			  if (csi10 == NULL)
+                              				goto error;
+                              			  protocol__flex_csi_p10__init(csi10);
+                              			  //TODO: set the wideband value
+                              			  // NN: this is also depends on cc_id
+                              			  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
+                              			  csi10->has_wb_cqi = 1;
+                              			  //Add the type of measurements to the csi report in the proper union type
+                              			  csi_reports[j]->p10csi = csi10;
                           		  }
+
                           		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P11CSI){
 
+
+                                      Protocol__FlexCsiP11 *csi11;
+                                      csi11 = malloc(sizeof(Protocol__FlexCsiP11));
+                                      if (csi11 == NULL)
+                                      goto error;
+                                      protocol__flex_csi_p11__init(csi11);
+                                    
+                                      csi11->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                      
+                                      csi11->wb_pmi = flexran_get_ue_pmi(enb_id);
+                                      csi11->has_wb_pmi = 1;
+
+                                      csi_reports[j]->p11csi = csi11;
+
+
                             		  }
+
                             		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P20CSI){
+
+                                      Protocol__FlexCsiP20 *csi20;
+                                      csi20 = malloc(sizeof(Protocol__FlexCsiP20));
+                                      if (csi20 == NULL)
+                                      goto error;
+                                      protocol__flex_csi_p20__init(csi20);
+                                    
+                                      csi20->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                      csi20->has_wb_cqi = 1;
+
+                                      
+                                      csi20->bandwidth_part_index = 1 ;//TODO
+                                      csi20->has_bandwidth_part_index = 1;
+
+                                      csi20->sb_index = 1 ;//TODO
+                                      csi20->has_sb_index = 1 ;                                     
+
+
+                                      csi_reports[j]->p20csi = csi20;
+
 
                             		  }
                             		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P21CSI){
 
+                                      Protocol__FlexCsiP21 *csi21;
+                                      csi21 = malloc(sizeof(Protocol__FlexCsiP21));
+                                      if (csi21 == NULL)
+                                      goto error;
+                                      protocol__flex_csi_p21__init(csi21);
+                                    
+                                      csi21->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                      
+                                      
+                                      csi21->wb_pmi = flexran_get_ue_pmi(enb_id); //TDO inside
+                                      csi21->has_wb_pmi = 1;
+
+                                      csi21->sb_cqi = 1; // TODO 
+                                       
+                                      csi21->bandwidth_part_index = 1 ; //TDO inside
+                                      csi21->has_bandwidth_part_index = 1 ; //TODO = 1;  
+
+                                      csi21->sb_index = 1 ;//TODO
+                                      csi21->has_sb_index = 1 ;                                     
+
+
+                                      csi_reports[j]->p20csi = csi21;
+
                             		  }
                             		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A12CSI){
 
+                                    // Protocol__FlexCsiA12 *csi12;
+                                    //   csi12 = malloc(sizeof(Protocol__FlexCsiA12));
+                                    //   if (csi12 == NULL)
+                                    //   goto error;
+                                    //   protocol__flex_csi_a12__init(csi12);
+                                    
+                                    //   csi12->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                      
+                                    //   csi12->sb_cqi = 1 ; //TODO inside
+                                    //   csi12->has_sb_cqi = 1;
+
+                                    //   csi12->
+                                    //   csi_reports[j]->p20csi = csi12;
+
+                                      // TODO continou
                             		  }
                             		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A22CSI){
 

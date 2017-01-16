@@ -36,11 +36,6 @@ void * enb_rrc[NUM_MAX_ENB];
 void * enb_ue_rrc[NUM_MAX_ENB];
 
 
-// Internal variables of EnodeB typedefs
-int CC_id[MAX_NUM_CCs];
-
-
-
 struct rrc_eNB_ue_context_s* enb_ue_context[NUM_MAX_ENB];
 
 
@@ -71,26 +66,14 @@ void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
 
 
 
-void flexran_get_CC_ids (mid_t mod_id, mid_t MAX_UE) {
+int  flexran_get_map_CC_id_rnti_downlink (mid_t mod_id, int CC_index, uint16_t ue_rnti) {
 
-  for (int i = 0; i < MAX_UE; i++) {
+  return ((eNB_MAC_INST *)enb[mod_id])->UE_list.ordered_CCids[CC_index][ue_rnti];;
+}
 
+int  flexran_get_map_CC_id_rnti_uplink (mid_t mod_id, int CC_index, uint16_t ue_rnti) {
 
-        if (MAX_NUM_CCs < MAX_UE){
-
-            CC_id[i] = ((eNB_MAC_INST *)enb[mod_id])->UE_list.ordered_CCids[i][i];
-
-        }
-        else {
-
-            LOG_E(FLEXRAN_AGENT, "Error In Internal functions");
- 
-        }
-
-        
-
-
-  }
+  return ((eNB_MAC_INST *)enb[mod_id])->UE_list.ordered_ULCCids[CC_index][ue_rnti];;
 }
 
 
@@ -187,11 +170,31 @@ int flexran_get_ue_wcqi (mid_t mod_id, mid_t ue_id) {
   return ((UE_list_t *)enb_ue[mod_id])->eNB_UE_stats[UE_PCCID(mod_id,ue_id)][ue_id].dl_cqi;
 }
 
-int flexran_get_tx_queue_size(mid_t mod_id, mid_t ue_id, logical_chan_id_t channel_id) {
+int flexran_get_ue_pmi(mid_t mod_id){
+
+
+}
+
+int flexran_get_tx_queue_size(mid_t mod_id, mid_t ue_id, logical_chan_id_t channel_id, char * buffer_status) {
 	rnti_t rnti = flexran_get_ue_crnti(mod_id,ue_id);
 	uint16_t frame = (uint16_t) flexran_get_current_frame(mod_id);
 	mac_rlc_status_resp_t rlc_status = mac_rlc_status_ind(mod_id,rnti, mod_id,frame,ENB_FLAG_YES,MBMS_FLAG_NO,channel_id,0);
-	return rlc_status.bytes_in_buffer;
+
+	if (strcmp(buffer_status, "bytes_buffer")){
+
+		return rlc_status.bytes_in_buffer;	
+	}
+	else if(strcmp(buffer_status, "pdu_buffer"))  {
+        
+        return rlc_status.pdus_in_buffer;	
+
+	}
+	else if (strcmp(buffer_status, "head_line")){
+
+		return rlc_status.head_sdu_remaining_size_to_send;	
+
+	}
+	
 }
 
 int flexran_update_TA(mid_t mod_id, mid_t ue_id, int CC_id) {
@@ -578,6 +581,17 @@ int flexran_get_duplex_mode(mid_t mod_id, int CC_id) {
 
 	return -1;
 }
+
+int flexran_get_antenna_ports(mid_t mod_id, int CC_id){
+
+	LTE_DL_FRAME_PARMS   *frame_parms;
+
+	frame_parms = mac_xface->get_lte_frame_parms(mod_id, CC_id);
+	return frame_parms->nb_antenna_ports_eNB;
+
+}
+
+
 
 long flexran_get_si_window_length(mid_t mod_id, int CC_id) {
 	return  ((eNB_RRC_INST *)enb_rrc[mod_id])->carrier[CC_id].sib1->si_WindowLength;

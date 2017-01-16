@@ -418,8 +418,8 @@ Protocol__FlexDlCsi * copy_csi_report(Protocol__FlexDlCsi * original) {
     for (i = 0; i < copy->p21csi->n_sb_cqi; i++) {
       copy->p21csi->sb_cqi[i] = original->p21csi->sb_cqi[i];
     }
-     copy->p21csi->has_badwidth_part_index = original->p21csi->has_badwidth_part_index;
-    copy->p21csi->badwidth_part_index = original->p21csi->badwidth_part_index;
+     copy->p21csi->has_bandwidth_part_index = original->p21csi->has_bandwidth_part_index;
+    copy->p21csi->bandwidth_part_index = original->p21csi->bandwidth_part_index;
     copy->p21csi->has_sb_index = original->p21csi->has_sb_index;
     copy->p21csi->sb_index = original->p21csi->sb_index;
     break;

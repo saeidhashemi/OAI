@@ -486,7 +486,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       cell_conf[i]->has_dl_cyclic_prefix_length = 1;
                       //TODO: Fill in with actual value, number of cell specific antenna ports. Currently single port support
-                      cell_conf[i]->antenna_ports_count = 1;
+                      cell_conf[i]->antenna_ports_count = flexran_get_antenna_ports(enb_id, 0);
                       cell_conf[i]->has_antenna_ports_count = 1;
 
                       if (flexran_get_duplex_mode(enb_id,i) == 1) {

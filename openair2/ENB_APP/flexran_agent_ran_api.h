@@ -104,13 +104,19 @@ int flexran_get_ue_phr (mid_t mod_id, mid_t ue_id);
 int flexran_get_ue_wcqi (mid_t mod_id, mid_t ue_id);
 
 /* Get the transmission queue size for a UE with a channel_id logical channel id */
-int flexran_get_tx_queue_size(mid_t mod_id, mid_t ue_id, logical_chan_id_t channel_id);
+int flexran_get_tx_queue_size(mid_t mod_id, mid_t ue_id, logical_chan_id_t channel_id, char * );
 
 /* Update the timing advance status (find out whether a timing advance command is required) */
 int flexran_update_TA(mid_t mod_id, mid_t ue_id, int CC_id);
 
 /* Return timing advance MAC control element for a designated cell and UE */
 int flexran_get_MAC_CE_bitmap_TA(mid_t mod_id, mid_t ue_id, int CC_id);
+
+/* MAP CC_id rnti in downlink*/
+int  flexran_get_map_CC_id_rnti_downlink (mid_t mod_id, int CC_index, uint16_t ue_rnti);
+
+/* MAP CC_id rnti in uplink*/
+int  flexran_get_map_CC_id_rnti_uplink (mid_t mod_id, int CC_index, uint16_t ue_rnti);
 
 /* Get the number of active component carriers for a specific UE */
 int flexran_get_active_CC(mid_t mod_id, mid_t ue_id);
