@@ -21,7 +21,7 @@
 
 /*! \file flexran_agent_common.c
  * \brief common primitives for all agents 
- * \author Xenofon Foukas, Mohamed Kassem and Navid Nikaein
+ * \author Xenofon Foukas, Shahab SHARIAT BAGHERI and Navid Nikaein
  * \date 2016
  * \version 0.1
  */
@@ -90,7 +90,7 @@ int flexran_get_current_time_ms (mid_t mod_id, int subframe_flag){
 
 unsigned int flexran_get_current_frame (mid_t mod_id) {
 
-  #warning "SFN will not be in [0-1023] when oaisim is used"
+ // #warning "SFN will not be in [0-1023] when oaisim is used"
   return ((eNB_MAC_INST *)enb[mod_id])->frame;
   
 }
@@ -932,6 +932,16 @@ int flexran_get_direction(mid_t ue_id, mid_t lc_id) {
 
 // New added, Morely RRC facilities
 
+int flexran_get_measId(mid_t ue_id){
+
+	int CNX_UE = 0; // NB_CNX_UE  2
+	int MEAS_ID = 0; //  MAX_MEAS_ID 6
+
+	return ((UE_RRC_INST *)enb_ue_rrc[ue_id])->measReportList[CNX_UE][MEAS_ID]->measId;
+
+}
+
+
 
 int flexran_get_ue_imsi(mid_t mod_id, mid_t ue_id){
 
@@ -1057,15 +1067,21 @@ uint32_t * flexran_get_ue_duplex_mode(mid_t mod_id, mid_t ue_id) {
 
 // TODO --------------
 
+
+// struct rrc_eNB_ue_context_s* flexran_agent_get_ue_context (void* enb, uint32_t rnti) {
+//   return rrc_eNB_get_ue_context((eNB_MAC_INST *)enb, rnti);
+// }
+
+
 // int flexran_get_ue_category(mid_t mod_id, mid_t ue_id){
 
- // enb_ue_context[mod_id]= flexran_agent_get_ue_context (enb[mod_id], ue_id);
+//  //enb_ue_context[mod_id]= flexran_agent_get_ue_context (enb[mod_id], ue_id);
 
- // if(enb_ue_context[mod_id] != NULL &&
- //    enb_ue_context[mod_id]->ue_context.eutra_Capability != NULL) {
- //    return enb_ue_context[mod_id]->ue_context.UE_EUTRA_Capability->ue_Category;
- //  }
- //  return -1;
+//  if(enb_ue_context[mod_id] != NULL &&
+//     enb_ue_context[mod_id]->ue_context.eutra_Capability != NULL) {
+//     return enb_ue_context[mod_id]->ue_context.UE_EUTRA_Capability->ue_Category;
+//   }
+//   return -1;
 // }
 
 

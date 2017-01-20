@@ -321,17 +321,17 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                                       	request_config.report_frequency = PROTOCOL__FLEX_STATS_REPORT_FREQ__FLSRF_ONCE;
                                       	request_config.period = 0;
                                       	/* Need to make sure that the ue flags are saved (Bug) */
-                                      	// if (report_config.nr_ue == 0) {
-                                      	//   report_config.nr_ue = 1;
-                                      	//   report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
-                                      	//   if (report_config.ue_report_type == NULL) {
-                                      	//     // TODO: Add appropriate error code
-                                      	//     err_code = -100;
-                                      	//     goto error;
-                                      	//   }
-                                      	//   report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
-                                      	//   report_config.ue_report_type[0].ue_report_flags = ue_flags;
-                                      	// }
+                                      	if (report_config.nr_ue == 0) {
+                                      	  report_config.nr_ue = 1;
+                                      	  report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
+                                      	  if (report_config.ue_report_type == NULL) {
+                                      	    // TODO: Add appropriate error code
+                                      	    err_code = -100;
+                                      	    goto error;
+                                      	  }
+                                      	  report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
+                                      	  report_config.ue_report_type[0].ue_report_flags = ue_flags;
+                                      	}
                                       	request_config.config = &report_config;
                                       	flexran_agent_enable_cont_mac_stats_update(enb_id, xid, &request_config);
                               }
@@ -684,13 +684,12 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                       	dl_report->has_sfn_sn = 1;
                       	//Set the number of DL CQI reports for this UE. One for each CC
                       	dl_report->n_csi_report = flexran_get_active_CC(enb_id,i);
-
+                        dl_report->n_csi_report = 1 ;
                       	//Create the actual CSI reports.
                       	Protocol__FlexDlCsi **csi_reports;
                       	csi_reports = malloc(sizeof(Protocol__FlexDlCsi *)*dl_report->n_csi_report);
                       	if (csi_reports == NULL)
-                      	  goto error;
-
+                      	  goto error;                    
                       	for (j = 0; j < dl_report->n_csi_report; j++) {
 
                           	  csi_reports[j] = malloc(sizeof(Protocol__FlexDlCsi));
@@ -708,131 +707,195 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  //The full set of types can be found in stats_common.pb-c.h and
                           	  //in the FlexRAN specifications
                               csi_reports[j]->type =  PROTOCOL__FLEX_CSI_TYPE__FLCSIT_P10;
-                          		  csi_reports[j]->has_type = 1;
-                          		  csi_reports[j]->report_case = PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI;
+                          		csi_reports[j]->has_type = 1;
+                          		csi_reports[j]->report_case = PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI;
 
-                          		  if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI){
+                          		if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P10CSI){
 
-                              			  Protocol__FlexCsiP10 *csi10;
-                              			  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
-                              			  if (csi10 == NULL)
-                              				goto error;
-                              			  protocol__flex_csi_p10__init(csi10);
-                              			  //TODO: set the wideband value
-                              			  // NN: this is also depends on cc_id
-                              			  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
-                              			  csi10->has_wb_cqi = 1;
-                              			  //Add the type of measurements to the csi report in the proper union type
-                              			  csi_reports[j]->p10csi = csi10;
-                          		  }
+                              		  Protocol__FlexCsiP10 *csi10;
+                              		  csi10 = malloc(sizeof(Protocol__FlexCsiP10));
+                              		  if (csi10 == NULL)
+                              			goto error;
+                              		  protocol__flex_csi_p10__init(csi10);
+                              		  //TODO: set the wideband value
+                              		  // NN: this is also depends on cc_id
+                              		  csi10->wb_cqi = flexran_get_ue_wcqi (enb_id, i); //eNB_UE_list->eNB_UE_stats[UE_PCCID(enb_id,i)][i].dl_cqi;
+                              		  csi10->has_wb_cqi = 1;
+                              		  //Add the type of measurements to the csi report in the proper union type
+                                 	  csi_reports[j]->p10csi = csi10;
+                          		}
 
-                          		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P11CSI){
+                          		else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P11CSI){
 
 
-                                      Protocol__FlexCsiP11 *csi11;
-                                      csi11 = malloc(sizeof(Protocol__FlexCsiP11));
-                                      if (csi11 == NULL)
-                                      goto error;
-                                      protocol__flex_csi_p11__init(csi11);
-                                    
-                                      csi11->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
-                                      
-                                      csi11->wb_pmi = flexran_get_ue_pmi(enb_id);
-                                      csi11->has_wb_pmi = 1;
+                                    Protocol__FlexCsiP11 *csi11;
+                                    csi11 = malloc(sizeof(Protocol__FlexCsiP11));
+                                    if (csi11 == NULL)
+                                    goto error;
+                                    protocol__flex_csi_p11__init(csi11);
+                                  
+                                    csi11->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                    // According To spec 36.213                                  
+                                     
+                                    if (flexran_get_antenna_ports(enb_id, j) == 2 && csi_reports[j]->ri == 1) {
+                                        // TODO PMI
+                                        csi11->wb_pmi = flexran_get_ue_pmi(enb_id);                          
+                                        csi11->has_wb_pmi = 1;
+
+                                       }   
+
+                                      else if (flexran_get_antenna_ports(enb_id, j) == 2 && csi_reports[j]->ri == 2){
+                                        // TODO PMI
+                                        csi11->wb_pmi = flexran_get_ue_pmi(enb_id);                                      
+                                        csi11->has_wb_pmi = 1;
+
+                                      }
+
+                                      else if (flexran_get_antenna_ports(enb_id, j) == 4 && csi_reports[j]->ri == 2){
+                                        // TODO PMI
+                                        csi11->wb_pmi = flexran_get_ue_pmi(enb_id);                                      
+                                        csi11->has_wb_pmi = 1;
+
+
+                                      }
+
+                                      csi11->has_wb_pmi = 0;                                      
 
                                       csi_reports[j]->p11csi = csi11;
 
+                               }
 
-                            		  }
+                                      
+                                     
 
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P20CSI){
 
-                                      Protocol__FlexCsiP20 *csi20;
-                                      csi20 = malloc(sizeof(Protocol__FlexCsiP20));
-                                      if (csi20 == NULL)
-                                      goto error;
-                                      protocol__flex_csi_p20__init(csi20);
+                            	else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P20CSI){
+
+                                    Protocol__FlexCsiP20 *csi20;
+                                    csi20 = malloc(sizeof(Protocol__FlexCsiP20));
+                                    if (csi20 == NULL)
+                                    goto error;
+                                    protocol__flex_csi_p20__init(csi20);
                                     
-                                      csi20->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
-                                      csi20->has_wb_cqi = 1;
+                                    csi20->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                    csi20->has_wb_cqi = 1;
 
                                       
-                                      csi20->bandwidth_part_index = 1 ;//TODO
-                                      csi20->has_bandwidth_part_index = 1;
+                                    csi20->bandwidth_part_index = 1 ;//TODO
+                                    csi20->has_bandwidth_part_index = 1;
 
-                                      csi20->sb_index = 1 ;//TODO
-                                      csi20->has_sb_index = 1 ;                                     
-
-
-                                      csi_reports[j]->p20csi = csi20;
+                                    csi20->sb_index = 1 ;//TODO
+                                    csi20->has_sb_index = 1 ;                                     
 
 
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P21CSI){
+                                    csi_reports[j]->p20csi = csi20;
 
-                                      Protocol__FlexCsiP21 *csi21;
-                                      csi21 = malloc(sizeof(Protocol__FlexCsiP21));
-                                      if (csi21 == NULL)
-                                      goto error;
-                                      protocol__flex_csi_p21__init(csi21);
+
+                         		  }
+
+                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_P21CSI){
+
+                                  Protocol__FlexCsiP21 *csi21;
+                                  csi21 = malloc(sizeof(Protocol__FlexCsiP21));
+                                  if (csi21 == NULL)
+                                  goto error;
+                                  protocol__flex_csi_p21__init(csi21);
+                                
+                                  csi21->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                  
+                                  
+                                  csi21->wb_pmi = flexran_get_ue_pmi(enb_id); //TDO inside
+                                  csi21->has_wb_pmi = 1;
+
+                                  csi21->sb_cqi = 1; // TODO 
+                                   
+                                  csi21->bandwidth_part_index = 1 ; //TDO inside
+                                  csi21->has_bandwidth_part_index = 1 ;   
+
+                                  csi21->sb_index = 1 ;//TODO
+                                  csi21->has_sb_index = 1 ;                                     
+
+
+                                  csi_reports[j]->p20csi = csi21;
+
+                        		  }
+
+                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A12CSI){
+
+                                  Protocol__FlexCsiA12 *csi12;
+                                  csi12 = malloc(sizeof(Protocol__FlexCsiA12));
+                                  if (csi12 == NULL)
+                                  goto error;
+                                  protocol__flex_csi_a12__init(csi12);
+                                
+                                  csi12->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                  
+                                  csi12->sb_pmi = 1 ; //TODO inside                                      
+                                
+
+                                  // TODO continou
+                        		  }
+
+                        		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A22CSI){
+
+
+                                    Protocol__FlexCsiA22 *csi22;
+                                    csi22 = malloc(sizeof(Protocol__FlexCsiA22));
+                                    if (csi22 == NULL)
+                                    goto error;
+                                    protocol__flex_csi_a22__init(csi22);
+                                  
+                                    csi22->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
                                     
-                                      csi21->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
-                                      
-                                      
-                                      csi21->wb_pmi = flexran_get_ue_pmi(enb_id); //TDO inside
-                                      csi21->has_wb_pmi = 1;
+                                    csi22->sb_cqi = 1 ; //TODO inside                                      
 
-                                      csi21->sb_cqi = 1; // TODO 
-                                       
-                                      csi21->bandwidth_part_index = 1 ; //TDO inside
-                                      csi21->has_bandwidth_part_index = 1 ; //TODO = 1;  
-
-                                      csi21->sb_index = 1 ;//TODO
-                                      csi21->has_sb_index = 1 ;                                     
-
-
-                                      csi_reports[j]->p20csi = csi21;
-
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A12CSI){
-
-                                    // Protocol__FlexCsiA12 *csi12;
-                                    //   csi12 = malloc(sizeof(Protocol__FlexCsiA12));
-                                    //   if (csi12 == NULL)
-                                    //   goto error;
-                                    //   protocol__flex_csi_a12__init(csi12);
+                                    csi22->wb_pmi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                    csi22->has_wb_pmi = 1;
                                     
-                                    //   csi12->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
-                                      
-                                    //   csi12->sb_cqi = 1 ; //TODO inside
-                                    //   csi12->has_sb_cqi = 1;
+                                    csi22->sb_pmi = 1 ; //TODO inside                                                                            
+                                    csi22->has_wb_pmi = 1;
 
-                                    //   csi12->
-                                    //   csi_reports[j]->p20csi = csi12;
+                                    csi22->sb_list = flexran_get_ue_wcqi (enb_id, i);                                       
 
-                                      // TODO continou
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A22CSI){
 
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A20CSI){
+                          		  }
 
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A30CSI){
+                          		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A20CSI){
 
-                            		  }
-                            		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A31CSI){
+                                    // Protocol__FlexCsiA20 *csi20;
+                                    // csi20 = malloc(sizeof(Protocol__FlexCsiA20));
+                                    // if (csi20 == NULL)
+                                    // goto error;
+                                    // protocol__flex_csi_a20__init(csi20);
 
-                            		  }
-                        		}
-                          	//Add the csi reports to the full DL CQI report
-                          	dl_report->csi_report = csi_reports;
-                          	//Add the DL CQI report to the stats report
-                          	ue_report[i]->dl_cqi_report = dl_report;
-                  }
+                                    // csi20->wb_cqi = flexran_get_ue_wcqi (enb_id, i);                                       
+                                    // csi20->has_wb_cqi = 1;
 
-                  /* Check flag for creation of paging buffer status report */
-                  if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PBS) {
+                                    // csi20>sb_cqi = 1 ; //TODO inside                                      
+                                    // csi20>has_sb_cqi = 1 ;
+
+                                    // csi20->sb_list = 1; // TODO inside
+
+
+                          		  }
+
+                          		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A30CSI){
+
+                          		  }
+
+                          		  else if(csi_reports[j]->report_case == PROTOCOL__FLEX_DL_CSI__REPORT_A31CSI){
+
+                          		  }
+
+                        }
+                     //Add the csi reports to the full DL CQI report
+                    dl_report->csi_report = csi_reports;
+                    //Add the DL CQI report to the stats report
+                     ue_report[i]->dl_cqi_report = dl_report;
+                }
+
+                /* Check flag for creation of paging buffer status report */
+                if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PBS) {
                           	//TODO: Fill in the actual paging buffer status report. For this field to be valid, the RNTI
                           	//set in the report must be a P-RNTI
                           	Protocol__FlexPagingBufferReport *paging_report;
@@ -854,7 +917,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                                 	  if(p_info[j] == NULL)
                                 	    goto error;
                                 	  protocol__flex_paging_info__init(p_info[j]);
-                                            	  //TODO: Set paging index. This index is the same that will be used for the scheduling of the
+                                    //TODO: Set paging index. This index is the same that will be used for the scheduling of the
                                 	  //paging message by the controller
                                 	  p_info[j]->paging_index = 10;
                                 	  p_info[j]->has_paging_index = 0;
@@ -873,10 +936,10 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	paging_report->paging_info = p_info;
                           	//Add the paging report to the UE report
                           	ue_report[i]->pbr = paging_report;
-                  }
+                }
 
                   /* Check flag for creation of UL CQI report */
-                 if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_UL_CQI) {
+                if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_UL_CQI) {
 
                     	//Fill in the full UL CQI report of the UE
                     	Protocol__FlexUlCqiReport *full_ul_report;
@@ -927,28 +990,65 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  full_ul_report->n_pucch_dbm = MAX_NUM_CCs;
                           	  full_ul_report->pucch_dbm = malloc(sizeof(Protocol__FlexPucchDbm *) * full_ul_report->n_pucch_dbm);
 
-                          	  for (j = 0; j < MAX_NUM_CCs; j++) {
-                                	    full_ul_report->pucch_dbm[j] = malloc(sizeof(Protocol__FlexPucchDbm));
-                                	    protocol__flex_pucch_dbm__init(full_ul_report->pucch_dbm[j]);
-                                	    full_ul_report->pucch_dbm[j]->has_serv_cell_index = 1;
-                                	    full_ul_report->pucch_dbm[j]->serv_cell_index = j;
-                                	    if(flexran_get_p0_pucch_dbm(enb_id,i, j) != -1){
-                                	      full_ul_report->pucch_dbm[j]->p0_pucch_dbm = flexran_get_p0_pucch_dbm(enb_id,i,j);
-                                	      full_ul_report->pucch_dbm[j]->has_p0_pucch_dbm = 1;
-                                	    }
+                          	  // for (j = 0; j < MAX_NUM_CCs; j++) {
+                             //    	    full_ul_report->pucch_dbm[j] = malloc(sizeof(Protocol__FlexPucchDbm));
+                             //    	    protocol__flex_pucch_dbm__init(full_ul_report->pucch_dbm[j]);
+                             //    	    full_ul_report->pucch_dbm[j]->has_serv_cell_index = 1;
+                             //    	    full_ul_report->pucch_dbm[j]->serv_cell_index = j;
+                             //    	    if(flexran_get_p0_pucch_dbm(enb_id,i, j) != -1){
+                             //    	      full_ul_report->pucch_dbm[j]->p0_pucch_dbm = flexran_get_p0_pucch_dbm(enb_id,i,j);
+                             //    	      full_ul_report->pucch_dbm[j]->has_p0_pucch_dbm = 1;
+                             //    	    }
                           	  }
 
+                               //  Add full UL CQI report to the UE report
+                              ue_report[i]->ul_cqi_report = full_ul_report;
+                      
 
-                          	  //  Add full UL CQI report to the UE report
-                          	  ue_report[i]->ul_cqi_report = full_ul_report;
-                    	}
-                 }
-          }
+                         }
+                          	 
+                 
+                     if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_RRC_MEASUREMENTS) {
+                            //TODO: Fill in the actual paging buffer status report. For this field to be valid, the RNTI
+                            
+                            Protocol__FlexRrcMeasurements *rrc_measurements;
+                            rrc_measurements = malloc(sizeof(Protocol__FlexRrcMeasurements));
+                            if (rrc_measurements == NULL)
+                              goto error;
 
-          /* Add list of all UE reports to the message */
+                            protocol__flex_rrc_measurements__init(rrc_measurements);
+                            
+                            rrc_measurements->measid = 15; //flexran_get_measId(i);
+                            rrc_measurements->has_measid = 1;
+
+                            rrc_measurements->pcell_rsrp = 1; // flexran_get_Pcell_rsrp()
+                            rrc_measurements->has_pcell_rsrp = 1;
+
+                            rrc_measurements->pcell_rsrq = 1 ; // flexran_get_Pcell_rsrq()                           
+                            rrc_measurements->has_pcell_rsrq = 1 ;
+                            //Provide a report for each pending paging message
+                            Protocol__FlexNeighCellsMeasurements *n_meas;
+                            n_meas = malloc(sizeof(Protocol__FlexNeighCellsMeasurements *));
+                            if (n_meas == NULL)
+                              goto error;
+
+                            
+                                                      
+                            ue_report[i]->rrc_measurements = rrc_measurements;
+                    }
+
+
+              }              
+
+
+               /* Add list of all UE reports to the message */
           stats_reply_msg->ue_report = ue_report;
 
-      }
+
+          }
+
+         
+      
 
   /* Allocate memory for list of cell reports */
   if (report_config->nr_cc > 0) {

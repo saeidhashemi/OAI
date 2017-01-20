@@ -61,10 +61,6 @@ struct lfds700_ringbuffer_element *rrc_dl_config_array[NUM_MAX_ENB];
 struct lfds700_ringbuffer_state rrc_ringbuffer_state[NUM_MAX_ENB];
 
 
-struct rrc_eNB_ue_context_s* flexran_agent_get_ue_context (void* enb, uint32_t rnti) {
-  return rrc_eNB_get_ue_context((eNB_MAC_INST *)enb, rnti);
-}
-
 
 void flexran_agent_init_rrc_agent(mid_t mod_id) {
   lfds700_misc_library_init_valid_on_current_logical_core();
