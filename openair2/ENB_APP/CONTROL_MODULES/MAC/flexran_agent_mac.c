@@ -315,11 +315,13 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                                       	  set up a new one*/
  
                                       	flexran_agent_disable_cont_mac_stats_update(mod_id);
-                                        
+                                        //flexran_agent_init_cont_mac_stats_update(mod_id);
                                       	stats_request_config_t request_config;
                                       	request_config.report_type = PROTOCOL__FLEX_STATS_TYPE__FLST_COMPLETE_STATS;
                                       	request_config.report_frequency = PROTOCOL__FLEX_STATS_REPORT_FREQ__FLSRF_ONCE;
                                       	request_config.period = 0;
+
+
                                       	/* Need to make sure that the ue flags are saved (Bug) */
                                       	if (report_config.nr_ue == 0) {
                                       	  report_config.nr_ue = 1;
@@ -333,6 +335,8 @@ int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__F
                                       	  report_config.ue_report_type[0].ue_report_flags = ue_flags;
                                       	}
                                       	request_config.config = &report_config;
+
+
                                       	flexran_agent_enable_cont_mac_stats_update(enb_id, xid, &request_config);
                               }
               }
@@ -643,7 +647,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
 
                           	  //TODO:Set tx queue head of line delay in ms
                           	  rlc_reports[j]->tx_queue_hol_delay = flexran_get_tx_queue_size(enb_id, i, j+1, "head_line");;
-                          	  rlc_reports[j]->has_tx_queue_hol_delay = 0;
+                          	  rlc_reports[j]->has_tx_queue_hol_delay = 1;
                           	  //TODO:Set retransmission queue size in bytes
                           	  rlc_reports[j]->retransmission_queue_size = 10;
                           	  rlc_reports[j]->has_retransmission_queue_size = 0;
@@ -652,7 +656,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  rlc_reports[j]->has_retransmission_queue_hol_delay = 0;
                           	  //TODO DONE:Set current size of the pending message in bytes
                           	  rlc_reports[j]->status_pdu_size = flexran_get_tx_queue_size(enb_id, i, j+1, "pdu_buffer");;
-                          	  rlc_reports[j]->has_status_pdu_size = 0;
+                          	  rlc_reports[j]->has_status_pdu_size = 1;
 
                       	}
                       	// Add RLC buffer status reports to the full report
@@ -920,16 +924,16 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                                     //TODO: Set paging index. This index is the same that will be used for the scheduling of the
                                 	  //paging message by the controller
                                 	  p_info[j]->paging_index = 10;
-                                	  p_info[j]->has_paging_index = 0;
+                                	  p_info[j]->has_paging_index = 1;
                                 	  //TODO:Set the paging message size
                                 	  p_info[j]->paging_message_size = 100;
-                                	  p_info[j]->has_paging_message_size = 0;
+                                	  p_info[j]->has_paging_message_size = 1;
                                 	  //TODO: Set the paging subframe
                                 	  p_info[j]->paging_subframe = 10;
-                                	  p_info[j]->has_paging_subframe = 0;
+                                	  p_info[j]->has_paging_subframe = 1;
                                 	  //TODO: Set the carrier index for the pending paging message
                                 	  p_info[j]->carrier_index = 0;
-                                	  p_info[j]->has_carrier_index = 0;
+                                	  p_info[j]->has_carrier_index = 1;
 
                           	}
                           	//Add all paging info to the paging buffer rerport
@@ -990,22 +994,26 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  full_ul_report->n_pucch_dbm = MAX_NUM_CCs;
                           	  full_ul_report->pucch_dbm = malloc(sizeof(Protocol__FlexPucchDbm *) * full_ul_report->n_pucch_dbm);
 
-                          	  // for (j = 0; j < MAX_NUM_CCs; j++) {
-                             //    	    full_ul_report->pucch_dbm[j] = malloc(sizeof(Protocol__FlexPucchDbm));
-                             //    	    protocol__flex_pucch_dbm__init(full_ul_report->pucch_dbm[j]);
-                             //    	    full_ul_report->pucch_dbm[j]->has_serv_cell_index = 1;
-                             //    	    full_ul_report->pucch_dbm[j]->serv_cell_index = j;
-                             //    	    if(flexran_get_p0_pucch_dbm(enb_id,i, j) != -1){
-                             //    	      full_ul_report->pucch_dbm[j]->p0_pucch_dbm = flexran_get_p0_pucch_dbm(enb_id,i,j);
-                             //    	      full_ul_report->pucch_dbm[j]->has_p0_pucch_dbm = 1;
-                             //    	    }
+                          	  for (j = 0; j < MAX_NUM_CCs; j++) {
+
+                                	    full_ul_report->pucch_dbm[j] = malloc(sizeof(Protocol__FlexPucchDbm));
+                                	    protocol__flex_pucch_dbm__init(full_ul_report->pucch_dbm[j]);
+                                	    full_ul_report->pucch_dbm[j]->has_serv_cell_index = 1;
+                                	    full_ul_report->pucch_dbm[j]->serv_cell_index = j;
+
+                                	    if(flexran_get_p0_pucch_dbm(enb_id,i, j) != -1){
+                                	      full_ul_report->pucch_dbm[j]->p0_pucch_dbm = flexran_get_p0_pucch_dbm(enb_id,i,j);
+                                	      full_ul_report->pucch_dbm[j]->has_p0_pucch_dbm = 1;
+                                	    }
                           	  }
 
-                               //  Add full UL CQI report to the UE report
-                              ue_report[i]->ul_cqi_report = full_ul_report;
+
+                          }
+                        //  Add full UL CQI report to the UE report
+                        ue_report[i]->ul_cqi_report = full_ul_report;
                       
 
-                         }
+                     }    
                           	 
                  
                      if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_RRC_MEASUREMENTS) {
@@ -1018,13 +1026,13 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
 
                             protocol__flex_rrc_measurements__init(rrc_measurements);
                             
-                            rrc_measurements->measid = 15; //flexran_get_measId(i);
+                            rrc_measurements->measid = 1 ; //flexran_get_measId(i); Fore the Moment ...
                             rrc_measurements->has_measid = 1;
 
-                            rrc_measurements->pcell_rsrp = 1; // flexran_get_Pcell_rsrp()
+                            rrc_measurements->pcell_rsrp = flexran_get_rsrp(0, 0, 0); // Should be changed in side ...
                             rrc_measurements->has_pcell_rsrp = 1;
 
-                            rrc_measurements->pcell_rsrq = 1 ; // flexran_get_Pcell_rsrq()                           
+                            rrc_measurements->pcell_rsrq = flexran_get_rsrq(0, 0, 0); // Should be changed inside ...                          
                             rrc_measurements->has_pcell_rsrq = 1 ;
                             //Provide a report for each pending paging message
                             Protocol__FlexNeighCellsMeasurements *n_meas;
@@ -1038,17 +1046,17 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                     }
 
 
-              }              
-
+                            
+             }       
 
                /* Add list of all UE reports to the message */
           stats_reply_msg->ue_report = ue_report;
 
 
-          }
+          
 
          
-      
+     } 
 
   /* Allocate memory for list of cell reports */
   if (report_config->nr_cc > 0) {
@@ -1082,10 +1090,10 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	ni_report->has_sfn_sf = 1;
                           	//TODO:Received interference power in dbm
                           	ni_report->rip = 0;
-                          	ni_report->has_rip = 0;
+                          	ni_report->has_rip = 1;
                           	//TODO:Thermal noise power in dbm
                           	ni_report->tnp = 0;
-                          	ni_report->has_tnp = 0;
+                          	ni_report->has_tnp = 1;
 
                           	ni_report->p0_nominal_pucch = flexran_get_p0_nominal_pucch(enb_id, 0);
                           	ni_report->has_p0_nominal_pucch = 1;

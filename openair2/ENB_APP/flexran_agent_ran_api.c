@@ -68,7 +68,7 @@ void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
 
 int  flexran_get_map_CC_id_rnti_downlink (mid_t mod_id, int CC_index, uint16_t ue_rnti) {
 
-  return ((eNB_MAC_INST *)enb[mod_id])->UE_list.ordered_CCids[CC_index][ue_rnti];;
+  return CC_id_rnti_downlink(mod_id, CC_index, ue_rnti);
 }
 
 int  flexran_get_map_CC_id_rnti_uplink (mid_t mod_id, int CC_index, uint16_t ue_rnti) {
@@ -148,7 +148,7 @@ uint16_t flexran_get_future_sfn_sf (mid_t mod_id, int ahead_of_time) {
 
 int flexran_get_num_ues (mid_t mod_id){
 
-  return  eNB_mac_inst[mod_id].UE_list.num_UEs;
+  return  ((eNB_MAC_INST *)enb[mod_id])->UE_list.num_UEs;
 }
 
 int flexran_get_ue_crnti (mid_t mod_id, mid_t ue_id) {
@@ -158,7 +158,7 @@ int flexran_get_ue_crnti (mid_t mod_id, mid_t ue_id) {
 
 int flexran_get_ue_bsr (mid_t mod_id, mid_t ue_id, lcid_t lcid) {
 
-  return ((UE_list_t *)enb_ue[mod_id])->UE_template[UE_PCCID(mod_id,ue_id)][ue_id].bsr_info[lcid];
+  return UE_BSR (mod_id, ue_id, lcid) ;
 }
 
 int flexran_get_ue_phr (mid_t mod_id, mid_t ue_id) {
@@ -338,6 +338,24 @@ int flexran_get_harq(const mid_t mod_id, const uint8_t CC_id, const mid_t ue_id,
 
   /* return 0; */
   return round;
+}
+
+
+int flexran_get_rsrp(mid_t mod_id, mid_t ue_id, int CC_id){
+
+	uint32_t rnti = flexran_get_ue_crnti(mod_id,ue_id);
+
+	return  mac_xface->get_RSRP(mod_id, CC_id, rnti);
+	
+
+}
+
+int flexran_get_rsrq(mid_t mod_id, mid_t ue_id, int CC_id){
+
+	uint32_t rnti = flexran_get_ue_crnti(mod_id,ue_id);
+
+	return  mac_xface->get_RSRQ(mod_id, CC_id, rnti);
+	
 }
 
 int flexran_get_p0_pucch_dbm(mid_t mod_id, mid_t ue_id, int CC_id) {
@@ -603,13 +621,17 @@ int flexran_get_sib1_length(mid_t mod_id, int CC_id) {
 
 int flexran_get_sib_periodicity(mid_t mod_id){
    
-   // return 0;//((UE_RRC_INST *)enb_ue_rrc[mod_id])->Info[0].SIperiod;
+   int NB_SIG_CNX_UE_temporary = 0; // For The Moment ... (NB_SIG_CNX_UE = 2)
+
+   return ((UE_RRC_INST *)enb_ue_rrc[mod_id])->Info[0].SIperiod;
 }
 
 
 int flexran_get_sib_periodicity_length(mid_t mod_id){
 
-  return UE_rrc_inst->Info[NB_SIG_CNX_UE].SIwindowsize;  
+  int NB_SIG_CNX_UE_temporary = 0; // For The Moment ... (NB_SIG_CNX_UE = 2)
+
+  return ((UE_RRC_INST *)enb_ue_rrc[mod_id])->Info[NB_SIG_CNX_UE_temporary].SIwindowsize;  
   
 }
 
@@ -621,10 +643,7 @@ int flexran_get_num_mbsfn(mid_t mod_id, mid_t CC_id){
 int flexran_get_num_pdcch_symb(mid_t mod_id, int CC_id) {
   /* TODO: This should return the number of PDCCH symbols initially used by the cell CC_id */
   
-   LTE_UE_PDCCH ue;
-
- 
-   return ue.num_pdcch_symbols;
+    return ((eNB_MAC_INST *) enb[mod_id])->common_channels[CC_id].DCI_pdu.num_pdcch_symbols;
 }
 
 

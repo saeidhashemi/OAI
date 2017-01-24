@@ -116,10 +116,10 @@ uint32_t get_RSSI (uint8_t Mod_id,uint8_t CC_id)
 uint32_t get_RSRP(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index)
 {
 
-  PHY_VARS_UE *ue = PHY_vars_UE_g[Mod_id][CC_id];
+  // PHY_VARS_UE *ue = PHY_vars_UE_g[Mod_id][CC_id];
 
-  if (ue)
-    return ue->measurements.rsrp[eNB_index];
+  // if (ue)
+  //   return ue->measurements.rsrp[eNB_index];
 
   return 0xFFFFFFFF;
 }
@@ -127,10 +127,10 @@ uint32_t get_RSRP(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index)
 uint32_t get_RSRQ(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index)
 {
 
-  PHY_VARS_UE *ue = PHY_vars_UE_g[Mod_id][CC_id];
+  // PHY_VARS_UE *ue = PHY_vars_UE_g[Mod_id][CC_id];
 
-  if (ue)
-    return ue->measurements.rsrq[eNB_index];
+  // if (ue)
+  //   return ue->measurements.rsrq[eNB_index];
 
   return 0xFFFFFFFF;
 }

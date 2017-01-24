@@ -422,7 +422,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                               goto error; 
                              protocol__flex_si_config__init(si_config); 
                              
-                             si_config->sfn =  flexran_get_sfn_sf (enb_id); // ----- wrong For the moment sfn 0 value to check ...  
+                             si_config->sfn =  flexran_get_sfn_sf (enb_id); 
                              si_config->has_sfn = 1; 
                              
                              si_config->sib1_length = flexran_get_sib1_length(enb_id,i); 
@@ -442,10 +442,10 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                                 goto error; 
                               protocol__flex_si_message__init(si_message[j]); 
 
-                              si_message[j]->periodicity = 1; //flexran_get_sib_periodicity(mod_id);   // ----check inside-----
+                              si_message[j]->periodicity = 1 ; //flexran_get_sib_periodicity(mod_id);   // ----check inside-----
                               si_message[j]->has_periodicity = 1; 
                               
-                              si_message[j]->length = 1; //flexran_get_sib_periodicity_length(mod_id);; 
+                              si_message[j]->length = 1 ; //flexran_get_sib_periodicity_length(mod_id);
                               si_message[j]->has_length = 1; 
                              } 
                              if(si_config->n_si_message > 0){ 

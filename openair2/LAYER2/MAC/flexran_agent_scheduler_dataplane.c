@@ -363,7 +363,7 @@ void flexran_apply_ue_spec_scheduling_decisions(mid_t mod_id,
 
 	    else {
 
-			    	printf("====== i am in the ELSE DATA PLANE\n");
+			    	
 			      // No need to create anything apart of DCI in case of retransmission
 			      
 			      /*TODO: Must add these */
