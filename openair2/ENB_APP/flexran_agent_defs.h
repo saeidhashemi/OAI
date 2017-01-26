@@ -52,6 +52,8 @@
 #define DEFAULT_FLEXRAN_AGENT_IPv4_ADDRESS "127.0.0.1"
 #define DEFAULT_FLEXRAN_AGENT_PORT          2210
 #define DEFAULT_FLEXRAN_AGENT_CACHE        "/mnt/oai_agent_cache"
+#define NUM_AGENT_LAYERS 2
+#define SUBMASK_LENGTH_LAYER 16
 
 typedef uint8_t xid_t;  
 typedef uint8_t mid_t;  // module or enb id 

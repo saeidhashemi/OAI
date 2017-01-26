@@ -41,14 +41,14 @@
 /* Initialization function for the agent structures etc */
 void flexran_agent_init_mac_agent(mid_t mod_id);
 
-int flexran_agent_mac_handle_stats(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg);
+int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg);
 
 /* Statistics request protocol message constructor and destructor */
 int flexran_agent_mac_stats_request(mid_t mod_id, xid_t xid, const stats_request_config_t *report_config, Protocol__FlexranMessage **msg);
 int flexran_agent_mac_destroy_stats_request(Protocol__FlexranMessage *msg);
 
 /* Statistics reply protocol message constructor and destructor */
-int flexran_agent_mac_stats_reply(mid_t mod_id, xid_t xid, const report_config_t *report_config, Protocol__FlexranMessage **msg);
+int flexran_agent_mac_stats_reply(mid_t mod_id, const report_config_t *report_config, Protocol__FlexUeStatsReport **ue_report, Protocol__FlexCellStatsReport **cell_report);
 int flexran_agent_mac_destroy_stats_reply(Protocol__FlexranMessage *msg);
 
 /* Scheduling request information protocol message constructor and estructor */

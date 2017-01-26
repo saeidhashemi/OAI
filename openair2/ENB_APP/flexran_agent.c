@@ -211,50 +211,48 @@ void *flexran_agent_task(void *args){
 }
 
 
-// int flexran_agent_register_control_module(mid_t mod_id, agent_id_t agent_id){
+ int flexran_agent_register_control_module(mid_t mod_id, agent_id_t agent_id){
   
   /* 
    * flexran control protocol specification version and 
    * the associated protobuf version 
    */
-  // TODO: this must be used in hello request/reply to 
-  // ensure that the versions are compatible
-
-  //----------------------------
-  // TODO Inside Correction flex 
-  //----------------------------
-
-//  flexran_agent[mod_id].version.number= 1;
-//  flexran_agent[mod_id].version.major = 0;
-//  flexran_agent[mod_id].version.minor = 0;
   
-//  flexran_agent[mod_id].version.protobuf = 2.0;
-
-//  flexran_agent[mod_id].cm_capabilities[agent_id].agent_id=agent_id;
-
-// switch (agent_id) {
-//  case  FLEXRAN_AGENT_MAC:;
-    
-//    flexran_agent[mod_id].cm_capabilities[agent_id].timer_type = FLEXRAN_AGENT_TIMER_TYPE_ONESHOT |  FLEXRAN_AGENT_TIMER_TYPE_PERIODIC | FLEXRAN_AGENT_TIMER_TYPE_EVENT_DRIVEN;
-
-//    flexran_agent[mod_id].cm_capabilities[agent_id].action_type = FLEXRAN_AGENT_ACTION_SEND | FLEXRAN_AGENT_ACTION_APPLY | FLEXRAN_AGENT_ACTION_FILTER ;
-
-//   break;
-//  case  FLEXRAN_AGENT_RRC :;
-    
-//    flexran_agent[mod_id].cm_capabilities[agent_id].timer_type = FLEXRAN_AGENT_TIMER_TYPE_ONESHOT |  FLEXRAN_AGENT_TIMER_TYPE_PERIODIC | FLEXRAN_AGENT_TIMER_TYPE_EVENT_DRIVEN;
-    
-//    flexran_agent[mod_id].cm_capabilities[agent_id].action_type = FLEXRAN_AGENT_ACTION_SEND | FLEXRAN_AGENT_ACTION_APPLY | FLEXRAN_AGENT_ACTION_FILTER ;
-    
-//    break;
-//  default:
-//    LOG_W(FLEXRAN_AGENT,"unknown agent id %d\n", agent_id);
-//    return -1; 
-//  }
+  // flexran_agent[mod_id].version.number= 1;
+  // flexran_agent[mod_id].version.major = 0;
+  // flexran_agent[mod_id].version.minor = 0;
   
-//  return 0;
+  // flexran_agent[mod_id].version.protobuf = 2.0;
+
+  // flexran_agent[mod_id].cm_capabilities[agent_id].agent_id = agent_id;
+
+ switch (agent_id) {
+
+  case  FLEXRAN_AGENT_MAC:;
+    
+    flexran_agent[mod_id].cm_capabilities[agent_id].timer_type = FLEXRAN_AGENT_TIMER_TYPE_ONESHOT |  FLEXRAN_AGENT_TIMER_TYPE_PERIODIC | FLEXRAN_AGENT_TIMER_TYPE_EVENT_DRIVEN;
+
+    flexran_agent[mod_id].cm_capabilities[agent_id].action_type = FLEXRAN_AGENT_ACTION_SEND | FLEXRAN_AGENT_ACTION_APPLY | FLEXRAN_AGENT_ACTION_FILTER ;
+
+   
+
+  case  FLEXRAN_AGENT_RRC :;
+
+    
+    flexran_agent[mod_id].cm_capabilities[agent_id].timer_type = FLEXRAN_AGENT_TIMER_TYPE_ONESHOT |  FLEXRAN_AGENT_TIMER_TYPE_PERIODIC | FLEXRAN_AGENT_TIMER_TYPE_EVENT_DRIVEN;
+    
+    flexran_agent[mod_id].cm_capabilities[agent_id].action_type = FLEXRAN_AGENT_ACTION_SEND | FLEXRAN_AGENT_ACTION_APPLY | FLEXRAN_AGENT_ACTION_FILTER ;
+    
+    
+
+  default:
+    LOG_W(FLEXRAN_AGENT,"unknown agent id %d\n", agent_id);
+    return -1; 
+  }
   
-//}
+  return 0;
+  
+}
 
 //int flexran_agent_action_type(mid_t mod_id, agent_id_t agent_id){
 //  return flexran_agent[mod_id].cm_capabilities[agent_id].action_type;
@@ -345,16 +343,18 @@ int flexran_agent_start(mid_t mod_id, const Enb_properties_array_t* enb_properti
    */
 
   /*Initialize the continuous MAC stats update mechanism*/
-  flexran_agent_init_cont_mac_stats_update(mod_id);
+   //flexran_agent_init_cont_rrc_stats_update(mod_id);
   
   new_thread(receive_thread, &flexran_agent[mod_id]);
 
   /*Initialize and register the mac xface. Must be modified later
    *for more flexibility in agent management */
 
-  AGENT_MAC_xface *mac_agent_xface = (AGENT_MAC_xface *) malloc(sizeof(AGENT_MAC_xface));
-  flexran_agent_register_mac_xface(mod_id, mac_agent_xface);
   
+  
+   // AGENT_RRC_xface *rrc_agent_xface = (AGENT_RRC_xface *) malloc(sizeof(AGENT_RRC_xface));
+   // flexran_agent_register_rrc_xface(mod_id, rrc_agent_xface);
+
   /* 
    * initilize a timer 
    */ 
@@ -364,8 +364,11 @@ int flexran_agent_start(mid_t mod_id, const Enb_properties_array_t* enb_properti
   /*
    * Initialize the mac agent
    */
-  flexran_agent_init_mac_agent(mod_id);
+  // flexran_agent_init_mac_agent(mod_id);
   
+
+  //flexran_agent_init_rrc_agent(mod_id);
+
   /* 
    * start the enb agent task for tx and interaction with the underlying network function
    */ 

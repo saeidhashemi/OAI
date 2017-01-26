@@ -11,7 +11,7 @@ message flex_complete_stats_request {
 	optional flex_stats_report_freq report_frequency = 1;
 	optional uint32 sf = 2;
 	optional uint32 cell_report_flags = 3;
-	optional uint32 ue_report_flags = 4;
+	optional uint64 ue_report_flags = 4;
 }
 
 message flex_cell_stats_request {
@@ -84,5 +84,5 @@ enum flex_ue_stats_type {
      FLUST_PBS = 32;
      FLUST_UL_CQI = 64;
      // To be extended with more types of stats
-     FLUST_RRC_MEASUREMENTS = 128;
+     FLUST_RRC_MEASUREMENTS = 65536;
 }

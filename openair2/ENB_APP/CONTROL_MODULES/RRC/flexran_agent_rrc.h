@@ -28,8 +28,8 @@
  *******************************************************************************/
 
 /*! \file flexran_agent_rrc.h
- * \brief FlexRAN agent message handler APIs for MAC layer
- * \author Navid Nikaein
+ * \brief FlexRAN agent Control Module RRC
+ * \author shahab SHARIAT BAGHERI and Navid Nikaein
  * \date 2016
  * \version 0.1
  */
@@ -49,22 +49,27 @@
 /* Initialization function for the agent structures etc */
 void flexran_agent_init_rrc_agent(mid_t mod_id);
 
+int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg);
+
+/* Statistics request protocol message constructor and destructor */
+int flexran_agent_rrc_stats_request(mid_t mod_id, xid_t xid, const stats_request_config_t *report_config, Protocol__FlexranMessage **msg);
+int flexran_agent_rrc_destroy_stats_request(Protocol__FlexranMessage *msg);
+
+/* Statistics reply protocol message constructor and destructor */
+int flexran_agent_rrc_stats_reply(mid_t mod_id, const report_config_t *report_config, Protocol__FlexUeStatsReport **ue_report, Protocol__FlexCellStatsReport **cell_report);
+int flexran_agent_rrc_destroy_stats_reply(Protocol__FlexranMessage *msg);
 
 /**********************************
  * FlexRAN agent - technology RRC API
  **********************************/
 
-/// Send to the controller all the mac stat updates that occured during this subframe
-/// based on the stats request configuration
+/* Send to the controller all the rrc stat updates that occured during this subframe*/
 void flexran_agent_send_update_rrc_stats(mid_t mod_id);
 
-/// Provide to the scheduler a pending dl_mac_config message
-//void flexran_agent_get_pending_dl_rrc_config(mid_t mod_id, Protocol__FlexranMessage **msg);
-
 /*Register technology specific interface callbacks*/
-int flexran_agent_register_rrc_xface(mid_t mod_id, AGENT_MAC_xface *xface);
+int flexran_agent_register_rrc_xface(mid_t mod_id, AGENT_RRC_xface *xface);
 
 /*Unregister technology specific callbacks*/
-int flexran_agent_unregister_rrc_xface(mid_t mod_id, AGENT_MAC_xface*xface);
+int flexran_agent_unregister_rrc_xface(mid_t mod_id, AGENT_RRC_xface*xface);
 
 #endif
