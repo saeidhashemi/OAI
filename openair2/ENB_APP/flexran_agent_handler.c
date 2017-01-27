@@ -260,9 +260,6 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
   int cc_id = 0;
   int enb_id = mod_id;
 
-  
-  
-  
 
 
   report_config_t report_config;
@@ -520,54 +517,15 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
   } // report config 
 
   // reply part 
+  
 
-
-  Protocol__FlexHeader *header;
-
-  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_STATS_REPLY, &header) != 0)
-    goto error;
-
-
-  Protocol__FlexStatsReply *stats_reply_msg;
-
-  stats_reply_msg = malloc(sizeof(Protocol__FlexStatsReply));
-
-  if (stats_reply_msg == NULL)
-    goto error;
-
-  protocol__flex_stats_reply__init(stats_reply_msg);
-  stats_reply_msg->header = header;
-
-  // stats_reply_msg->n_ue_report = report_config.nr_ue;
-  // stats_reply_msg->n_cell_report = report_config.nr_cc;
-
-
-
-  if (agent_check_layer[0]){
-
-    if (flexran_agent_mac_stats_reply(enb_id, &report_config, (Protocol__FlexUeStatsReport **) stats_reply_msg->ue_report, (Protocol__FlexCellStatsReport **)stats_reply_msg->cell_report) < 0 ) {
-        err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
-        goto error;
-    }
-
-  }
-
-  if(agent_check_layer[1]){    
-    if (flexran_agent_rrc_stats_reply(enb_id, &report_config, (Protocol__FlexUeStatsReport **)stats_reply_msg->ue_report, (Protocol__FlexCellStatsReport **)stats_reply_msg->cell_report) < 0 ){  
+  if (flexran_agent_stats_reply(enb_id, xid, &report_config, msg )){  
       err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
       goto error;
     }
 
-  }
 
-  *msg = malloc(sizeof(Protocol__FlexranMessage));
-  if(*msg == NULL)
-    goto error;
-  protocol__flexran_message__init(*msg);
-  (*msg)->msg_case = PROTOCOL__FLEXRAN_MESSAGE__MSG_STATS_REPLY_MSG;
-  (*msg)->msg_dir =  PROTOCOL__FLEXRAN_DIRECTION__SUCCESSFUL_OUTCOME;
-  (*msg)->stats_reply_msg = stats_reply_msg;
-
+  
 
   free(report_config.ue_report_type);
   free(report_config.cc_report_type);
@@ -580,4 +538,107 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
 }
 
 
+int flexran_agent_stats_reply(mid_t enb_id, xid_t xid, const report_config_t *report_config, Protocol__FlexranMessage **msg){
+
+  Protocol__FlexHeader *header;
+  err_code_t err_code;
+  int i;
+
+  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_STATS_REPLY, &header) != 0)
+    goto error;
+
+  
+  Protocol__FlexStatsReply *stats_reply_msg;
+
+  stats_reply_msg = malloc(sizeof(Protocol__FlexStatsReply));
+
+  if (stats_reply_msg == NULL)
+    goto error;
+
+  protocol__flex_stats_reply__init(stats_reply_msg);
+  stats_reply_msg->header = header;
+
+  stats_reply_msg->n_ue_report = report_config->nr_ue;
+  stats_reply_msg->n_cell_report = report_config->nr_cc;
+
+  // UE report
+
+  Protocol__FlexUeStatsReport **ue_report;
+  
+
+  ue_report = malloc(sizeof(Protocol__FlexUeStatsReport *) * report_config->nr_ue);
+          if (ue_report == NULL)
+            goto error;
+  
+  for (i = 0; i < report_config->nr_ue; i++) {
+
+      ue_report[i] = malloc(sizeof(Protocol__FlexUeStatsReport));
+      protocol__flex_ue_stats_report__init(ue_report[i]);
+      ue_report[i]->rnti = report_config->ue_report_type[i].ue_rnti;
+      ue_report[i]->has_rnti = 1;
+      ue_report[i]->flags = report_config->ue_report_type[i].ue_report_flags;
+      ue_report[i]->has_flags = 1;
+  
+  }
+
+  // cell rpoert 
+
+  Protocol__FlexCellStatsReport **cell_report;
+
+  
+  cell_report = malloc(sizeof(Protocol__FlexCellStatsReport *) * report_config->nr_cc);
+  if (cell_report == NULL)
+    goto error;
+  
+  for (i = 0; i < report_config->nr_cc; i++) {
+
+      cell_report[i] = malloc(sizeof(Protocol__FlexCellStatsReport));
+      if(cell_report[i] == NULL)
+          goto error;
+
+      protocol__flex_cell_stats_report__init(cell_report[i]);
+      cell_report[i]->carrier_index = report_config->cc_report_type[i].cc_id;
+      cell_report[i]->has_carrier_index = 1;
+      cell_report[i]->flags = report_config->cc_report_type[i].cc_report_flags;
+      cell_report[i]->has_flags = 1;
+
+  }
+
+
+if (agent_check_layer[0]){
+
+    if (flexran_agent_mac_stats_reply(enb_id, report_config,  ue_report, cell_report) < 0 ) {
+        err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
+        goto error;
+    }
+
+  }
+
+  if(agent_check_layer[1]){    
+
+    if (flexran_agent_rrc_stats_reply(enb_id, report_config, ue_report, cell_report) < 0 ){  
+      err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
+      goto error;
+    }
+
+  }
+
+  stats_reply_msg->cell_report = cell_report;
+  stats_reply_msg->ue_report = ue_report;
+
+ *msg = malloc(sizeof(Protocol__FlexranMessage));
+  if(*msg == NULL)
+    goto error;
+  protocol__flexran_message__init(*msg);
+  (*msg)->msg_case = PROTOCOL__FLEXRAN_MESSAGE__MSG_STATS_REPLY_MSG;
+  (*msg)->msg_dir =  PROTOCOL__FLEXRAN_DIRECTION__SUCCESSFUL_OUTCOME;
+  (*msg)->stats_reply_msg = stats_reply_msg;
+
+  return 0;
+
+error :
+  LOG_E(FLEXRAN_AGENT, "errno %d occured\n", err_code);
+  return err_code;
+
+}
 

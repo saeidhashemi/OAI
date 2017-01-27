@@ -318,56 +318,21 @@ int flexran_agent_mac_destroy_stats_request(Protocol__FlexranMessage *msg) {
 int flexran_agent_mac_stats_reply(mid_t mod_id,				
 				  const report_config_t *report_config,
 				   Protocol__FlexUeStatsReport **ue_report,
-          Protocol__FlexCellStatsReport **cell_report) {
+           Protocol__FlexCellStatsReport **cell_report) {
 
 
   // Protocol__FlexHeader *header;
   int i, j, k;
   int cc_id = 0;
   int enb_id = mod_id;
-  //eNB_MAC_INST *eNB = &eNB_mac_inst[enb_id];
-  //UE_list_t *eNB_UE_list=  &eNB->UE_list;
-
-
-  // if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_STATS_REPLY, &header) != 0)
-  //   goto error;
-
-  // Protocol__FlexStatsReply *stats_reply_msg;
-  // stats_reply_msg = malloc(sizeof(Protocol__FlexStatsReply));
-
-  // if (stats_reply_msg == NULL)
-  //   goto error;
-
-  //protocol__flex_stats_reply__init(stats_reply_msg);
-  // stats_reply_msg->header = header;
-
-  // stats_reply_msg->n_ue_report = report_config->nr_ue;
-  // stats_reply_msg->n_cell_report = report_config->nr_cc;
-
-  // Protocol__FlexUeStatsReport **ue_report;
-  // Protocol__FlexCellStatsReport **cell_report;
-
-  
-  // ue_report = stats_reply_msg->ue_report;
-  // cell_report = stats_reply_msg->cell_report;
 
   /* Allocate memory for list of UE reports */
   if (report_config->nr_ue > 0) {
 
-          ue_report = malloc(sizeof(Protocol__FlexUeStatsReport *) * report_config->nr_ue);
-          if (ue_report == NULL)
-            goto error;
-
+          
           for (i = 0; i < report_config->nr_ue; i++) {
 
 
-                ue_report[i] = malloc(sizeof(Protocol__FlexUeStatsReport));
-                protocol__flex_ue_stats_report__init(ue_report[i]);
-                ue_report[i]->rnti = report_config->ue_report_type[i].ue_rnti;
-                ue_report[i]->has_rnti = 1;
-                ue_report[i]->flags = report_config->ue_report_type[i].ue_report_flags;
-                ue_report[i]->has_flags = 1;
-                /* Check the types of reports that need to be constructed based on flag values */
 
                 /* Check flag for creation of buffer status report */
                 if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_BSR) {
@@ -381,7 +346,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                             	  // NN: we need to know the cc_id here, consider the first one 
                             	  elem[j] = flexran_get_ue_bsr (enb_id, i, j); 
                       	}
-                          printf("-------------------  FLUST_BSR\n");
+                          
                       	ue_report[i]->bsr = elem;
                 }
                 
@@ -389,7 +354,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                 if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_PHR) {
                       	ue_report[i]->phr = flexran_get_ue_phr (enb_id, i); // eNB_UE_list->UE_template[UE_PCCID(enb_id,i)][i].phr_info;
                       	ue_report[i]->has_phr = 1;
-                          printf("-------------------  FLUST_PHR\n");
+                      
                 }
 
                 /* Check flag for creation of RLC buffer status report */
@@ -430,7 +395,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                       	if (ue_report[i]->n_rlc_report > 0)
                          	  ue_report[i]->rlc_report = rlc_reports;
 
-                            printf("-------------------  FLUST_RLC_BS\n");
+                      
                 }
 
                 /* Check flag for creation of MAC CE buffer status report */
@@ -442,7 +407,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                       					       found in stats_common.pb-c.h. See
                       					       flex_ce_type in FlexRAN specification */
                       	ue_report[i]->has_pending_mac_ces = 1;
-                          printf("-------------------  FLUST_MAC_CE_BS\n");
+                  
                 }
 
                 /* Check flag for creation of DL CQI report */
@@ -666,7 +631,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                     dl_report->csi_report = csi_reports;
                     //Add the DL CQI report to the stats report
                      ue_report[i]->dl_cqi_report = dl_report;
-                       printf("-------------------  FLUST_DL_CQI\n");
+                      
                 }
 
                 /* Check flag for creation of paging buffer status report */
@@ -792,28 +757,17 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
              }       
 
           
-
+         
          
      } 
 
   /* Allocate memory for list of cell reports */
   if (report_config->nr_cc > 0) {
     
-            cell_report = malloc(sizeof(Protocol__FlexCellStatsReport *) * report_config->nr_cc);
-            if (cell_report == NULL)
-                 goto error;
+            
             // Fill in the Cell reports
             for (i = 0; i < report_config->nr_cc; i++) {
 
-                      cell_report[i] = malloc(sizeof(Protocol__FlexCellStatsReport));
-                      if(cell_report[i] == NULL)
-                	        goto error;
-
-                      protocol__flex_cell_stats_report__init(cell_report[i]);
-                      cell_report[i]->carrier_index = report_config->cc_report_type[i].cc_id;
-                      cell_report[i]->has_carrier_index = 1;
-                      cell_report[i]->flags = report_config->cc_report_type[i].cc_report_flags;
-                      cell_report[i]->has_flags = 1;
 
                       /* Check flag for creation of noise and interference report */
                       if(report_config->cc_report_type[i].cc_report_flags & PROTOCOL__FLEX_CELL_STATS_TYPE__FLCST_NOISE_INTERFERENCE) {
@@ -838,31 +792,21 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	cell_report[i]->noise_inter_report = ni_report;
                       }
             }
-            /* Add list of all cell reports to the message */
+            
+
+      
+            
   }
 
-  // *msg = malloc(sizeof(Protocol__FlexranMessage));
-  // if(*msg == NULL)
-  //   goto error;
-  // protocol__flexran_message__init(*msg);
-  // (*msg)->msg_case = PROTOCOL__FLEXRAN_MESSAGE__MSG_STATS_REPLY_MSG;
-  // (*msg)->msg_dir =  PROTOCOL__FLEXRAN_DIRECTION__SUCCESSFUL_OUTCOME;
-  // (*msg)->stats_reply_msg = stats_reply_msg;
   return 0;
 
  error:
-  // TODO: Need to make proper error handling
-  // if (header != NULL)
-  //   free(header);
+
   if (cell_report != NULL)
         free(cell_report);
   if (ue_report != NULL)
         free(ue_report);
-  // if (stats_reply_msg != NULL)
-  //   free(stats_reply_msg);
-  // if(*msg != NULL)
-  //   free(*msg);
-  //LOG_E(MAC, "%s: an error occured\n", __FUNCTION__);
+
   return -1;
 }
 
@@ -1510,7 +1454,7 @@ void flexran_agent_send_update_mac_stats(mid_t mod_id) {
   if (current_report != NULL){
     data=flexran_agent_pack_message(current_report, &size);
     /*Send any stats updates using the MAC channel of the eNB*/
-    if (flexran_agent_msg_send(mod_id, FLEXRAN_AGENT_MAC, data, size, priority)) {
+    if (flexran_agent_msg_send(mod_id, FLEXRAN_AGENT_DEFAULT, data, size, priority)) {
       err_code = PROTOCOL__FLEXRAN_ERR__MSG_ENQUEUING;
       goto error;
     }
@@ -1542,6 +1486,8 @@ int flexran_agent_register_mac_xface(mid_t mod_id, AGENT_MAC_xface *xface) {
   xface->dl_scheduler_loaded_lib = NULL;
 
   mac_agent_registered[mod_id] = 1;
+
+
   agent_mac_xface[mod_id] = xface;
 
   return 0;

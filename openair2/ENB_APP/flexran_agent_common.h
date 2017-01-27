@@ -136,8 +136,8 @@ Protocol__FlexranMessage* flexran_agent_handle_message (mid_t mod_id,
 /* Function to be used to send a message to a dispatcher once the appropriate event is triggered. */
 Protocol__FlexranMessage *flexran_agent_handle_timed_task(void *args);
 
-
-
+/* Function to be used to handle reply message . */
+int flexran_agent_stats_reply(mid_t enb_id, xid_t xid, const report_config_t *report_config, Protocol__FlexranMessage **msg);
 
 
 
