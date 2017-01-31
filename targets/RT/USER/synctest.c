@@ -1109,7 +1109,7 @@ int main(int argc, char **argv)
       return(error_code);
     }
     else {
-      LOG_D(HW,"[lte-softmodem.c] Allocate UE_thread successful\n");
+      LOG_I(HW,"[lte-softmodem.c] Allocate UE_thread successful\n");
     }
     #endif
     #ifdef DLSCH_THREAD

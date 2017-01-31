@@ -60,6 +60,22 @@ typedef int (*flexran_agent_message_destruction_callback)(
 	Protocol__FlexranMessage *msg
 );
 
+
+
+typedef struct {
+ 
+  uint8_t is_initialized;
+  volatile uint8_t cont_update;
+  xid_t xid;
+  Protocol__FlexranMessage *stats_req;
+  Protocol__FlexranMessage *prev_stats_reply;
+
+  pthread_mutex_t *mutex;
+} stats_updates_context_t;
+
+stats_updates_context_t stats_context[NUM_MAX_ENB];
+
+
 /**********************************
  * FlexRAN protocol messages helper 
  * functions and generic handlers
@@ -139,7 +155,12 @@ Protocol__FlexranMessage *flexran_agent_handle_timed_task(void *args);
 /* Function to be used to handle reply message . */
 int flexran_agent_stats_reply(mid_t enb_id, xid_t xid, const report_config_t *report_config, Protocol__FlexranMessage **msg);
 
+int flexran_agent_stats_request(mid_t mod_id, xid_t xid, const stats_request_config_t *report_config, Protocol__FlexranMessage **msg);
+int flexran_agent_destroy_stats_request(Protocol__FlexranMessage *msg);
+ 
+err_code_t flexran_agent_enable_cont_stats_update(mid_t mod_id, xid_t xid, stats_request_config_t *stats_req) ;
 
+int flexran_agent_stats_request(mid_t mod_id, xid_t xid,  const stats_request_config_t *report_config, Protocol__FlexranMessage **msg);
 
 
 #endif

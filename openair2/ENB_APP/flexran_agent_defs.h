@@ -53,6 +53,7 @@
 #define DEFAULT_FLEXRAN_AGENT_PORT          2210
 #define DEFAULT_FLEXRAN_AGENT_CACHE        "/mnt/oai_agent_cache"
 #define NUM_AGENT_LAYERS 2
+ 
 #define SUBMASK_LENGTH_LAYER 16
 
 typedef uint8_t xid_t;  
