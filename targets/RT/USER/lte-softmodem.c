@@ -112,7 +112,7 @@ extern int netlink_init(void);
 
 // In lte-enb.c
 extern int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg);
-extern void init_eNB(eNB_func_t *, eNB_timing_t *,int,eth_params_t *,int);
+extern void init_eNB(eNB_func_t *, eNB_timing_t *,int,eth_params_t *,int,int);
 extern void stop_eNB(int);
 extern void kill_eNB_proc(void);
 
@@ -160,6 +160,9 @@ volatile int             oai_exit = 0;
 
 
 
+static clock_source_t clock_source = internal;
+
+static wait_for_sync = 0;
 
 static char              UE_flag=0;
 unsigned int                    mmapped_dma=0;
@@ -379,6 +382,7 @@ void help (void) {
   printf("  --ue-scan_carrier set UE to scan around carrier\n");
   printf("  --loop-memory get softmodem (UE) to loop through memory instead of acquiring from HW\n");
   printf("  --mmapped-dma sets flag for improved EXMIMO UE performance\n");  
+  printf("  --external-clock tells hardware to use an external clock reference\n");
   printf("  --usim-test use XOR autentication algo in case of test usim mode\n"); 
   printf("  --single-thread-disable. Disables single-thread mode in lte-softmodem\n"); 
   printf("  -C Set the downlink frequency for all component carriers\n");
@@ -652,7 +656,7 @@ void *l2l1_task(void *arg)
 #endif
 
 
-
+ 
 
 static void get_options (int argc, char **argv)
 {
@@ -689,6 +693,8 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_PHYTEST,
     LONG_OPTION_USIMTEST,
     LONG_OPTION_MMAPPED_DMA,
+    LONG_OPTION_EXTERNAL_CLOCK,
+    LONG_OPTION_WAIT_FOR_SYNC,
     LONG_OPTION_SINGLE_THREAD_DISABLE,
 #if T_TRACER
     LONG_OPTION_T_PORT,
@@ -716,6 +722,8 @@ static void get_options (int argc, char **argv)
     {"phy-test", no_argument, NULL, LONG_OPTION_PHYTEST},
     {"usim-test", no_argument, NULL, LONG_OPTION_USIMTEST},
     {"mmapped-dma", no_argument, NULL, LONG_OPTION_MMAPPED_DMA},
+    {"external-clock", no_argument, NULL, LONG_OPTION_EXTERNAL_CLOCK},
+    {"wait-for-sync", no_argument, NULL, LONG_OPTION_WAIT_FOR_SYNC},
     {"single-thread-disable", no_argument, NULL, LONG_OPTION_SINGLE_THREAD_DISABLE},
 #if T_TRACER
     {"T_port",                 required_argument, 0, LONG_OPTION_T_PORT},
@@ -824,7 +832,15 @@ static void get_options (int argc, char **argv)
     case LONG_OPTION_SINGLE_THREAD_DISABLE:
       single_thread_flag = 0;
       break;
-              
+
+    case LONG_OPTION_EXTERNAL_CLOCK:
+      clock_source = external;
+      break;
+
+    case LONG_OPTION_WAIT_FOR_SYNC:
+      wait_for_sync = 1;
+      break;
+
 #if T_TRACER
     case LONG_OPTION_T_PORT: {
       extern int T_port;
@@ -1335,6 +1351,7 @@ void init_openair0() {
 
     openair0_cfg[card].num_rb_dl=frame_parms[0]->N_RB_DL;
 
+    openair0_cfg[card].clock_source = clock_source;
 
     openair0_cfg[card].tx_num_channels=min(2,((UE_flag==0) ? PHY_vars_eNB_g[0][0]->frame_parms.nb_antennas_tx : PHY_vars_UE_g[0][0]->frame_parms.nb_antennas_tx));
     openair0_cfg[card].rx_num_channels=min(2,((UE_flag==0) ? PHY_vars_eNB_g[0][0]->frame_parms.nb_antennas_rx : PHY_vars_UE_g[0][0]->frame_parms.nb_antennas_rx));
@@ -1360,6 +1377,7 @@ void init_openair0() {
 	openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB - rx_gain_off;
       }
 
+      openair0_cfg[card].configFilename = rf_config_file;
       printf("Card %d, channel %d, Setting tx_gain %f, rx_gain %f, tx_freq %f, rx_freq %f\n",
              card,i, openair0_cfg[card].tx_gain[i],
              openair0_cfg[card].rx_gain[i],
@@ -1585,6 +1603,7 @@ int main( int argc, char **argv )
 
                       if (UE[CC_id]->mac_enabled == 0) {  //set default UL parameters for testing mode
 
+
                             	for (i=0; i<NUMBER_OF_CONNECTED_eNB_MAX; i++) {
 
                                     	  UE[CC_id]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
@@ -1648,7 +1667,7 @@ int main( int argc, char **argv )
             for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
 
                         PHY_vars_eNB_g[0][CC_id] = init_lte_eNB(frame_parms[CC_id],0,frame_parms[CC_id]->Nid_cell,
-                                                                 abstraction_flag);
+                                                                 eNodeB_3GPP, abstraction_flag);
                         PHY_vars_eNB_g[0][CC_id]->CC_id = CC_id;
 
                         PHY_vars_eNB_g[0][CC_id]->ue_dl_rb_alloc=0x1fff;
@@ -1702,7 +1721,6 @@ int main( int argc, char **argv )
                 PHY_vars_eNB_g[0][CC_id]->N_TA_offset = 0;
 
             }
-
 
     NB_eNB_INST=1;
     NB_INST=1;
@@ -1927,7 +1945,8 @@ int main( int argc, char **argv )
   }
   else { 
 
-    init_eNB(node_function,node_timing,1,eth_params,single_thread_flag);
+
+    init_eNB(node_function,node_timing,1,eth_params,single_thread_flag, 0);
     // Sleep to allow all threads to setup
     
     number_of_cards = 1;

@@ -33,6 +33,7 @@
 #include "flexran_agent_common.h"
 #include "flexran_agent_common_internal.h"
 #include "flexran_agent_extern.h"
+#include "flexran_agent_net_comm.h"
 #include "PHY/extern.h"
 #include "log.h"
 
@@ -111,14 +112,16 @@ int flexran_agent_hello(mid_t mod_id, const void *params, Protocol__FlexranMessa
   Protocol__FlexHeader *header;
   /*TODO: Need to set random xid or xid from received hello message*/
   xid_t xid = 1;
-  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_HELLO, &header) != 0)
-    goto error;
 
   Protocol__FlexHello *hello_msg;
   hello_msg = malloc(sizeof(Protocol__FlexHello));
   if(hello_msg == NULL)
     goto error;
   protocol__flex_hello__init(hello_msg);
+
+  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_HELLO, &header) != 0)
+    goto error;
+
   hello_msg->header = header;
 
   *msg = malloc(sizeof(Protocol__FlexranMessage));
@@ -164,14 +167,16 @@ int flexran_agent_echo_request(mid_t mod_id, const void* params, Protocol__Flexr
   Protocol__FlexHeader *header;
   /*TODO: Need to set a random xid*/
   xid_t xid = 1;
-  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_ECHO_REQUEST, &header) != 0)
-    goto error;
 
-  Protocol__FlexEchoRequest *echo_request_msg;
+  Protocol__FlexEchoRequest *echo_request_msg = NULL;
   echo_request_msg = malloc(sizeof(Protocol__FlexEchoRequest));
   if(echo_request_msg == NULL)
     goto error;
   protocol__flex_echo_request__init(echo_request_msg);
+
+  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_ECHO_REQUEST, &header) != 0)
+    goto error;
+
   echo_request_msg->header = header;
 
   *msg = malloc(sizeof(Protocol__FlexranMessage));
@@ -218,15 +223,16 @@ int flexran_agent_echo_reply(mid_t mod_id, const void *params, Protocol__Flexran
   Protocol__FlexEchoRequest *echo_req = input->echo_request_msg;
   xid = (echo_req->header)->xid;
 
-  Protocol__FlexHeader *header;
-  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_ECHO_REPLY, &header) != 0)
-    goto error;
-
-  Protocol__FlexEchoReply *echo_reply_msg;
+  Protocol__FlexEchoReply *echo_reply_msg = NULL;
   echo_reply_msg = malloc(sizeof(Protocol__FlexEchoReply));
   if(echo_reply_msg == NULL)
     goto error;
   protocol__flex_echo_reply__init(echo_reply_msg);
+
+  Protocol__FlexHeader *header;
+  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_ECHO_REPLY, &header) != 0)
+    goto error;
+
   echo_reply_msg->header = header;
 
   *msg = malloc(sizeof(Protocol__FlexranMessage));
@@ -266,11 +272,6 @@ int flexran_agent_destroy_echo_reply(Protocol__FlexranMessage *msg) {
 }
 
 
-/*
- * ************************************
- * eNB Configuration Request and Reply
- * ************************************
- */
 
 int flexran_agent_enb_config_request(mid_t mod_id, const void* params, Protocol__FlexranMessage **msg) {
 
@@ -298,6 +299,7 @@ int flexran_agent_enb_config_request(mid_t mod_id, const void* params, Protocol_
   (*msg)->enb_config_request_msg = enb_config_request_msg;
   return 0;
 
+
   error:
     // TODO: Need to make proper error handling
     if (header != NULL)
@@ -308,12 +310,14 @@ int flexran_agent_enb_config_request(mid_t mod_id, const void* params, Protocol_
       free(*msg);
     //LOG_E(MAC, "%s: an error occured\n", __FUNCTION__);
     return -1;
+
 }
 
 int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
 
   xid_t xid;
   Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
+
   Protocol__FlexEnbConfigRequest *enb_config_req_msg = input->enb_config_request_msg;
   xid = (enb_config_req_msg->header)->xid;
   
@@ -323,6 +327,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
   
   Protocol__FlexHeader *header;
   if(flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_GET_ENB_CONFIG_REPLY, &header) != 0)
+
     goto error;
   
    Protocol__FlexEnbConfigReply *enb_config_reply_msg;
@@ -354,6 +359,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       cell_conf[i]->cell_id = i;
                       cell_conf[i]->has_cell_id = 1;
+
 
                       cell_conf[i]->pusch_hopping_offset = flexran_get_hopping_offset(enb_id,i);
                       cell_conf[i]->has_pusch_hopping_offset = 1;
@@ -393,6 +399,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       }
 
                       else if (flexran_get_phich_resource(enb_id,i) == 3) {
+
 
                             cell_conf[i]->phich_resource = PROTOCOL__FLEX_PHICH_RESOURCE__FLPR_TWO;//3
                       }
@@ -459,6 +466,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                             cell_conf[i]->ul_bandwidth = flexran_get_N_RB_UL(enb_id,i);
                             cell_conf[i]->has_ul_bandwidth = 1;
 
+
                       if (flexran_get_ul_cyclic_prefix_length(enb_id, i) == 0) {
 
                             cell_conf[i]->ul_cyclic_prefix_length = PROTOCOL__FLEX_UL_CYCLIC_PREFIX_LENGTH__FLUCPL_NORMAL;
@@ -477,7 +485,9 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                             cell_conf[i]->ul_cyclic_prefix_length = PROTOCOL__FLEX_DL_CYCLIC_PREFIX_LENGTH__FLDCPL_NORMAL;
 
+
                       } 
+
 
                       else if (flexran_get_ul_cyclic_prefix_length(enb_id,i) == 1) {
 
@@ -490,6 +500,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       cell_conf[i]->has_antenna_ports_count = 1;
 
                       if (flexran_get_duplex_mode(enb_id,i) == 1) {
+
 
                             cell_conf[i]->duplex_mode = PROTOCOL__FLEX_DUPLEX_MODE__FLDM_FDD;
 
@@ -527,6 +538,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
                       elem_rfoffset = (uint32_t *) malloc(sizeof(uint32_t) *cell_conf[i]->n_mbsfn_subframe_config_rfoffset);
                       if(elem_rfoffset == NULL)
                             goto error;
+
 
                       for(j = 0; j < cell_conf[i]->n_mbsfn_subframe_config_rfoffset; j++){
 
@@ -736,6 +748,7 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
                         ue_config[i]->meas_gap_config_sf_offset = flexran_get_meas_gap_config_offset(mod_id,i);
                         ue_config[i]->has_meas_gap_config_sf_offset = 1;
 
+
                     }
                     //TODO: Set the SPS configuration (Optional)
                     //Not supported for noe, so we do not set it
@@ -788,6 +801,7 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
 
                     if (flexran_get_tti_bundling(mod_id,i) != -1) {
 
+
                           ue_config[i]->has_tti_bundling = 1;
                           ue_config[i]->tti_bundling = flexran_get_tti_bundling(mod_id,i);
                     }
@@ -806,6 +820,7 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
                     }
 
                     if (flexran_get_beta_offset_ri_index(mod_id,i) != -1) {
+
 
                           ue_config[i]->has_beta_offset_ri_index = 1;
                           ue_config[i]->beta_offset_ri_index = flexran_get_beta_offset_ri_index(mod_id,i);
@@ -884,11 +899,13 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
                           ue_config[i]->has_scell_deactivation_timer = 0;
                           ue_config[i]->scell_deactivation_timer = 0;
 
+
                     }
           }
 
 
           ue_config_reply_msg->ue_config = ue_config;
+
   }
 
 
@@ -917,6 +934,7 @@ int flexran_agent_ue_config_reply(mid_t mod_id, const void *params, Protocol__Fl
 
 int flexran_agent_destroy_ue_config_reply(Protocol__FlexranMessage *msg) {
   if(msg->msg_case != PROTOCOL__FLEXRAN_MESSAGE__MSG_UE_CONFIG_REPLY_MSG)
+
     goto error;
   free(msg->ue_config_reply_msg->header);
   int i, j;
@@ -930,6 +948,7 @@ int flexran_agent_destroy_ue_config_reply(Protocol__FlexranMessage *msg) {
   free(reply);
   free(msg);
 
+
   return 0;
  error:
   //LOG_E(FLEXRAN_AGENT, "%s: an error occured\n", __FUNCTION__);
@@ -939,6 +958,7 @@ int flexran_agent_destroy_ue_config_reply(Protocol__FlexranMessage *msg) {
 int flexran_agent_destroy_ue_config_request(Protocol__FlexranMessage *msg) {
   /* TODO: Deallocate memory for a dynamically allocated UE config message */
   return 0;
+
 }
 
 
@@ -957,15 +977,17 @@ int flexran_agent_lc_config_reply(mid_t mod_id, const void *params, Protocol__Fl
   xid = (lc_config_request_msg->header)->xid;
 
   int i, j;
-  Protocol__FlexHeader *header;
-  if(flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_GET_LC_CONFIG_REPLY, &header) != 0)
-    goto error;
 
   Protocol__FlexLcConfigReply *lc_config_reply_msg;
   lc_config_reply_msg = malloc(sizeof(Protocol__FlexLcConfigReply));
   if(lc_config_reply_msg == NULL)
     goto error;
   protocol__flex_lc_config_reply__init(lc_config_reply_msg);
+
+  Protocol__FlexHeader *header;
+  if(flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_GET_LC_CONFIG_REPLY, &header) != 0)
+    goto error;
+
   lc_config_reply_msg->header = header;
 
   lc_config_reply_msg->n_lc_ue_config = flexran_get_num_ues(mod_id);
@@ -1066,6 +1088,7 @@ int flexran_agent_lc_config_reply(mid_t mod_id, const void *params, Protocol__Fl
   //LOG_E(FLEXRAN_AGENT, "%s: an error occured\n", __FUNCTION__);
   return -1;
 }
+
 int flexran_agent_destroy_lc_config_reply(Protocol__FlexranMessage *msg) {
   if(msg->msg_case != PROTOCOL__FLEXRAN_MESSAGE__MSG_LC_CONFIG_REPLY_MSG)
     goto error;
@@ -1101,6 +1124,7 @@ int flexran_agent_destroy_lc_config_request(Protocol__FlexranMessage *msg) {
 
 
 
+
 /*
  * ************************************
  * Control delegation 
@@ -1126,6 +1150,7 @@ long timer_end(struct timespec start_time){
 int flexran_agent_control_delegation(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
 
   Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
+
   Protocol__FlexControlDelegation *control_delegation_msg = input->control_delegation_msg;
   char lib_name[120];
   char target[512];
