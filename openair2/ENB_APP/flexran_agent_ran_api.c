@@ -34,9 +34,8 @@ void * enb[NUM_MAX_ENB];
 void * enb_ue[NUM_MAX_ENB];
 void * enb_rrc[NUM_MAX_ENB];
 void * enb_ue_rrc[NUM_MAX_ENB];
+rrc_eNB_ue_context_t * enb_ue_context[NUM_MAX_ENB];
 
-
-struct rrc_eNB_ue_context_s* enb_ue_context[NUM_MAX_ENB];
 
 
 void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
@@ -357,6 +356,25 @@ int flexran_get_rsrq(mid_t mod_id, mid_t ue_id, int CC_id){
 	return  mac_xface->get_RSRQ(mod_id, CC_id, rnti);
 	
 }
+
+int flexran_get_Ul_rssi(mid_t mod_id, mid_t ue_id, int CC_id){
+
+    LTE_eNB_UE_stats *eNB_UE_stats = NULL;
+	uint32_t rnti = flexran_get_ue_crnti(mod_id,ue_id);
+
+	eNB_UE_stats =  mac_xface->get_eNB_UE_stats(mod_id, CC_id, rnti);
+	
+	if (eNB_UE_stats == NULL) {
+	  return -1;
+	}
+		
+		return eNB_UE_stats->UL_rssi[0];
+	
+	
+
+
+}
+
 
 int flexran_get_p0_pucch_dbm(mid_t mod_id, mid_t ue_id, int CC_id) {
 	LTE_eNB_UE_stats *eNB_UE_stats = NULL;
@@ -965,10 +983,10 @@ int flexran_get_measId(mid_t ue_id){
 int flexran_get_ue_imsi(mid_t mod_id, mid_t ue_id){
 
  // uint32_t rnti = flexran_get_ue_crnti(mod_id, ue_id);
- // enb_ue_context[mod_id]= flexran_agent_get_ue_context (enb[mod_id], rnti);
+ // enb_ue_context[mod_id]= flexran_agent_get_ue_context (mod_id, rnti);
     
  // if (enb_ue_context[mod_id] != NULL) {
- //   //return enb_ue_context[mod_id]->ue_context.ue_imsi; 
+ //   return enb_ue_context[mod_id]->ue_context.ue_imsi; 
  // }
  // return -1;
 }
@@ -1087,9 +1105,9 @@ uint32_t * flexran_get_ue_duplex_mode(mid_t mod_id, mid_t ue_id) {
 // TODO --------------
 
 
-// struct rrc_eNB_ue_context_s* flexran_agent_get_ue_context (void* enb, uint32_t rnti) {
-//   return rrc_eNB_get_ue_context((eNB_MAC_INST *)enb, rnti);
-// }
+struct rrc_eNB_ue_context_s* flexran_agent_get_ue_context (mid_t mod_id, uint32_t rnti) {
+  return rrc_eNB_get_ue_context( (eNB_RRC_INST *)enb_rrc[mod_id], rnti);
+}
 
 
 // int flexran_get_ue_category(mid_t mod_id, mid_t ue_id){

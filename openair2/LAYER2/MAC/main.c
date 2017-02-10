@@ -551,7 +551,7 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, char *uecap_xer,ui
 #endif
 
   mac_xface->get_PHR = get_PHR;
-  LOG_D(MAC,"[MAIN] ALL INIT OK\n");
+  LOG_I(MAC,"[MAIN] ALL INIT OK\n");
 
   mac_xface->macphy_init(eMBMS_active,uecap_xer,cba_group_active,HO_active);
 

@@ -93,7 +93,7 @@ extern uint16_t N310[8];
 extern uint16_t N311[8];
 extern uint32_t T304[8];
 extern uint32_t timeToTrigger_ms[16];
-extern float RSRP_meas_mapping[100];
+extern float RSRP_meas_mapping[98];
 extern float RSRQ_meas_mapping[33];
 
 #endif
