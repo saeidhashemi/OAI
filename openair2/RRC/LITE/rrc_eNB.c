@@ -1860,7 +1860,7 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 
   ReportConfig_per = CALLOC(1, sizeof(*ReportConfig_per));
 
-  // ReportConfig_A1 = CALLOC(1, sizeof(*ReportConfig_A1));
+  
 
   // ReportConfig_A2 = CALLOC(1, sizeof(*ReportConfig_A2));
 
@@ -1870,6 +1870,9 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 
   // ReportConfig_A5 = CALLOC(1, sizeof(*ReportConfig_A5));
 
+
+  // Periodical Measurement Report
+
   ReportConfig_per->reportConfigId = 1;
   ReportConfig_per->reportConfig.present = ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA;
 
@@ -1878,14 +1881,20 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 
     ReportConfig_per->reportConfig.choice.reportConfigEUTRA.triggerType.choice.periodical.purpose =
       ReportConfigEUTRA__triggerType__periodical__purpose_reportStrongestCells;
-    ReportConfig_per->reportConfig.choice.reportConfigEUTRA.triggerQuantity = ReportConfigEUTRA__triggerQuantity_rsrp;
-   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportQuantity = ReportConfigEUTRA__reportQuantity_sameAsTriggerQuantity;
-   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.maxReportCells = 2;
-  // ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportInterval = ReportInterval_ms1024; 
 
-    ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportAmount = ReportConfigEUTRA__reportAmount_r1; // put r1 to see once, r2 for 2 times and ...
+    // ReportConfig_per->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger = TimeToTrigger_ms40;  
+    ReportConfig_per->reportConfig.choice.reportConfigEUTRA.triggerQuantity = ReportConfigEUTRA__triggerQuantity_rsrp;
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportQuantity = ReportConfigEUTRA__reportQuantity_both;
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.maxReportCells = 2;
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportInterval = ReportInterval_ms5120; 
+
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportAmount = ReportConfigEUTRA__reportAmount_r8; // put r1 to see once, r2 for 2 times and ...
+
 
   ASN_SEQUENCE_ADD(&ReportConfig_list->list, ReportConfig_per);
+
+
+  // ReportConfig_A1 = CALLOC(1, sizeof(*ReportConfig_A1));
 
   // ReportConfig_A1->reportConfigId = 2;
   // ReportConfig_A1->reportConfig.present = ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA;
@@ -1897,14 +1906,18 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
   // a1_Threshold.present = ThresholdEUTRA_PR_threshold_RSRP;
   // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.choice.eventA1.
   // a1_Threshold.choice.threshold_RSRP = 10;
-
+  // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger = TimeToTrigger_ms40;
+  
   // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.triggerQuantity = ReportConfigEUTRA__triggerQuantity_rsrp;
   // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.reportQuantity = ReportConfigEUTRA__reportQuantity_both;
   // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.maxReportCells = 2;
   // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.reportInterval = ReportInterval_ms120;
-  // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.reportAmount = ReportConfigEUTRA__reportAmount_infinity;
+  // ReportConfig_A1->reportConfig.choice.reportConfigEUTRA.reportAmount /= ReportConfigEUTRA__reportAmount_infinity;
 
   // ASN_SEQUENCE_ADD(&ReportConfig_list->list, ReportConfig_A1);
+
+
+
 
   // if (ho_state == 1 /*HO_MEASURMENT */ ) {
   //   LOG_I(RRC, "[eNB %d] frame %d: requesting A2, A3, A4, A5, and A6 event reporting\n",
@@ -2260,8 +2273,8 @@ rrc_eNB_process_MeasurementReport(
   //   T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
 
-  // LOG_I(RRC, "[eNB %d] Frame %d: Process Measurement Report From UE %x (Measurement Id %d)\n",
-  //       ctxt_pP->module_id, ctxt_pP->frame, ctxt_pP->rnti, measResults2->measId);
+  LOG_I(RRC, "[eNB %d] Frame %d: Process Measurement Report From UE %x (Measurement Id %d)\n",
+        ctxt_pP->module_id, ctxt_pP->frame, ctxt_pP->rnti, measResults2->measId);
 
 /*  if (measResults2->measResultNeighCells->choice.measResultListEUTRA.list.count > 0) {
       
@@ -2274,9 +2287,10 @@ rrc_eNB_process_MeasurementReport(
                  measResult.rsrqResult));
   }
 */
+
  
-  LOG_N(RRC, "RSRP of Primary Cell is %d \n", measResults2->measResultPCell.rsrpResult - 139);
-  LOG_N(RRC, "RSRQ of Primary Cell is %d  \n", (measResults2->measResultPCell.rsrqResult)/2 - 20);
+  LOG_W(RRC, "RSRP of Primary Cell is %d dbm \n", measResults2->measResultPCell.rsrpResult - 140);
+  LOG_W(RRC, "RSRQ of Primary Cell is %d dbm \n", (measResults2->measResultPCell.rsrqResult)/2 - 20);
  
   // if (ue_context_pP->ue_context.handover_info->ho_prepare != 0xF0) {
     // rrc_eNB_generate_HandoverPreparationInformation(ctxt_pP,
@@ -4519,6 +4533,17 @@ rrc_eNB_decode_dcch(
                     ue_context_p,
                     &ul_dcch_msg->message.choice.c1.choice.measurementReport.
                     criticalExtensions.choice.c1.choice.measurementReport_r8.measResults);
+
+#if defined(FLEXRAN_AGENT_SB_IF)
+                        
+                        if (rrc_agent_registered[ctxt_pP->module_id]) {
+                          agent_rrc_xface[ctxt_pP->eNB_index]->flexran_trigger_rrc_measurements (ctxt_pP->module_id, &ul_dcch_msg->message.choice.c1.choice.measurementReport.criticalExtensions.choice.c1.choice.measurementReport_r8.measResults);
+                        }
+#endif
+
+
+
+
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_rrcConnectionReconfigurationComplete:
@@ -4578,7 +4603,7 @@ rrc_eNB_decode_dcch(
                       	  ul_dcch_msg->message.choice.c1.choice.rrcConnectionReconfigurationComplete.rrc_TransactionIdentifier);
 
 #if defined(FLEXRAN_AGENT_SB_IF)
-                      	//WARNING:Inform the controller about the UE activation. Should be moved to RRC agent in the future
+                      	
                       	if (rrc_agent_registered[ctxt_pP->module_id]) {
                       	  agent_rrc_xface[ctxt_pP->eNB_index]->flexran_agent_notify_ue_state_change(ctxt_pP->module_id,
                       										ue_context_p->ue_id_rnti,
@@ -4688,7 +4713,7 @@ rrc_eNB_decode_dcch(
                             PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP));
             	  
 #if defined(FLEXRAN_AGENT_SB_IF)
-            	  //WARNING:Inform the controller about the UE activation. Should be moved to RRC agent in the future
+            	  
             	  if (rrc_agent_registered[ctxt_pP->module_id]) {
             	    agent_rrc_xface[ctxt_pP->eNB_index]->flexran_agent_notify_ue_state_change(ctxt_pP->module_id,
             										  ue_context_p->ue_id_rnti,

@@ -21,7 +21,7 @@
 
 /*! \file flexran_agent_handler.c
  * \brief FlexRAN agent tx and rx message handler 
- * \author Xenofon Foukas and Navid Nikaein
+ * \author Xenofon Foukas and Navid Nikaein and shahab SHARIAT BAGHERI
  * \date 2016
  * \version 0.1
  */
@@ -523,10 +523,10 @@ if (agent_check_layer[0]){
 
   if(agent_check_layer[1]){    
 
-    if (flexran_agent_rrc_stats_reply(enb_id, report_config, ue_report, cell_report) < 0 ){  
-      err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
-      goto error;
-    }
+    // if (flexran_agent_rrc_stats_reply(enb_id, report_config, ue_report, cell_report) < 0 ){  
+    //   err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
+    //   goto error;
+    // }
 
   }
 
@@ -781,7 +781,7 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
                                                                         
                                         // flexran_agent_disable_cont_mac_stats_update(mod_id);
                                       if (c){
-
+                                          
                                          flexran_agent_init_cont_stats_update(mod_id);
                                       }
                                         
@@ -794,16 +794,16 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
                                         /* Need to make sure that the ue flags are saved (Bug) */
                                         if (report_config.nr_ue == 0) {
                                           report_config.nr_ue = 1;
-                                          report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
-                                          if (report_config.ue_report_type == NULL) {
-                                            // TODO: Add appropriate error code
-                                            err_code = -100;
-                                            goto error;
-                                          }
-                                          report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
-                                          report_config.ue_report_type[0].ue_report_flags = ue_flags;
+                                        //   report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
+                                        //   if (report_config.ue_report_type == NULL) {
+                                        //     // TODO: Add appropriate error code
+                                        //     err_code = -100;
+                                        //     goto error;
+                                        //   }
+                                        //   report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
+                                        //   report_config.ue_report_type[0].ue_report_flags = ue_flags;
                                         }
-                                        request_config.config = &report_config;
+                                         request_config.config = &report_config;
 
 
                                         flexran_agent_enable_cont_stats_update(enb_id, xid, &request_config);
@@ -818,7 +818,7 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
                                         /*If request was for continuous updates, disable the previous configuration and
                                           set up a new one*/
  
-                                                                        
+                                                                         
                                         // flexran_agent_disable_cont_mac_stats_update(mod_id);
                                       // if (c){
 

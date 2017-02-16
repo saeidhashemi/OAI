@@ -41,6 +41,7 @@
 #include "flexran.pb-c.h"
 #include "stats_messages.pb-c.h"
 #include "stats_common.pb-c.h"
+#include "MeasResults.h"
 
 #include "flexran_agent_common.h"
 #include "flexran_agent_extern.h"
@@ -65,6 +66,9 @@ int flexran_agent_rrc_destroy_stats_reply(Protocol__FlexranMessage *msg);
 
 /* Send to the controller all the rrc stat updates that occured during this subframe*/
 void flexran_agent_send_update_rrc_stats(mid_t mod_id);
+
+/* this is called by RRC as a part of rrc xface  . The controller previously requested  this*/ 
+int flexran_trigger_rrc_measurements (mid_t mod_id, MeasResults_t *);
 
 /*Register technology specific interface callbacks*/
 int flexran_agent_register_rrc_xface(mid_t mod_id, AGENT_RRC_xface *xface);

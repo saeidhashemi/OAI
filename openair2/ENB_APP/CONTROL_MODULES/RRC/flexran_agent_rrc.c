@@ -38,7 +38,7 @@
 #include "flexran_agent_extern.h"
 #include "flexran_agent_common.h"
 #include "flexran_agent_rrc_internal.h"
-
+//#include "flexran_agent_rrc_measurements.h"
 
 #include "liblfds700.h"
 
@@ -389,6 +389,357 @@ int flexran_agent_destroy_ue_state_change(Protocol__FlexranMessage *msg) {
   return -1;
 }
 
+/* this is called by RRC as a part of rrc xface  . The controller previously requested  this*/ 
+int flexran_trigger_rrc_measurements (mid_t mod_id, MeasResults_t*  measResults) {
+
+  // int i, m, k;
+  int                   priority;
+  void                  *data;
+  int                   size;
+  err_code_t             err_code;
+  Protocol__FlexUeStatsReport **ue_report;
+  Protocol__FlexCellStatsReport **cell_report;
+  Protocol__FlexStatsReply *stats_reply_msg;
+  Protocol__FlexranMessage *msg;
+
+  Protocol__FlexHeader *header;
+  int xid = 0;
+  int i;
+
+  if (flexran_create_header(xid, PROTOCOL__FLEX_TYPE__FLPT_STATS_REPLY, &header) != 0)
+    goto error;
+
+
+
+  stats_reply_msg = malloc(sizeof(Protocol__FlexStatsReply));
+
+  if (stats_reply_msg == NULL)
+    goto error;
+
+  protocol__flex_stats_reply__init(stats_reply_msg);
+  stats_reply_msg->header = header;
+  stats_reply_msg->n_ue_report = 1;
+  stats_reply_msg->n_cell_report = 1;
+
+/****** LOCK ******************************************************************/
+  // pthread_spin_lock(&rrc_meas_t_lock);
+
+  // struct rrc_meas_trigg *ctxt;
+  // ctxt = rrc_meas_get_trigg(p->rnti, p->meas->measId);
+
+  // pthread_spin_unlock(&rrc_meas_t_lock);
+/****** UNLOCK ****************************************************************/
+
+  // if (ctxt == NULL) {
+
+  //   flexran_RRC_meas_reconf(p->rnti, -1, p->meas->measId, NULL, NULL);
+  //    Free the measurement report received from UE. 
+  //   ASN_STRUCT_FREE(asn_DEF_MeasResults, p->meas);
+  //   /* Free the params. */
+  //   free(p);
+  //   return 0;
+  // }
+
+
+  /* Check here whether trigger is registered in agent and then proceed.
+  */
+  // if (em_has_trigger(mod_id, ctxt->t_id, RRC_MEAS_TRIGGER) == 0) {
+
+  //   flexran_RRC_meas_reconf(p->rnti, -1, p->meas->measId, NULL, NULL);
+  //   /* Trigger does not exist in agent so remove from wrapper as well. */
+  //   if (rrc_meas_rem_trigg(ctxt) < 0) {
+  //     goto error;
+  //   }
+  // }
+
+  
+
+
+  /* Set the RNTI of the UE. */
+  // repl->rnti = p->rnti;
+  /* Set the request status. */
+  // if (p->reconfig_success == 0) {
+  //   repl->status = STATS_REQ_STATUS__SREQS_FAILURE;
+  //   goto error;
+  // }
+  /* Successful outcome. */
+  // repl->status = STATS_REQ_STATUS__SREQS_SUCCESS;
+  /* Set the measurement ID of measurement. */
+  // repl->has_measid = 1;
+  // repl->measid = measResults->measId;
+  /* Fill the Primary Cell RSRP and RSRQ. */
+  // repl->has_pcell_rsrp = 1;
+  // repl->has_pcell_rsrq = 1;
+  // #ifdef Rel10
+    // repl->has_pcell_rsrp = 1;
+    // repl->has_pcell_rsrq = 1;
+    // repl->pcell_rsrp = measResults2->measResultPCell.rsrpResult - 140;
+    // repl->pcell_rsrq = (measResults2->measResultPCell.rsrqResult)/2 - 20;
+
+    ue_report = malloc(sizeof(Protocol__FlexUeStatsReport *) * 1);
+          if (ue_report == NULL)
+            goto error;
+
+    for (i = 0; i < 1; i++) {
+
+      ue_report[i] = malloc(sizeof(Protocol__FlexUeStatsReport));
+       if(ue_report[i] == NULL)
+          goto error;
+      protocol__flex_ue_stats_report__init(ue_report[i]);
+      ue_report[i]->rnti = flexran_get_ue_crnti(mod_id, 0);
+      printf("----------> rnti : %d \n", ue_report[i]->rnti);
+      ue_report[i]->has_rnti = 1;
+       ue_report[i]->flags = 65536;
+       ue_report[i]->has_flags = 1;
+  
+    }
+
+    cell_report = malloc(sizeof(Protocol__FlexCellStatsReport *) * 1);
+    if (cell_report == NULL)
+       goto error;
+  
+     for (i = 0; i < 1; i++) {
+
+      cell_report[i] = malloc(sizeof(Protocol__FlexCellStatsReport));
+      if(cell_report[i] == NULL)
+          goto error;
+
+      protocol__flex_cell_stats_report__init(cell_report[i]);
+      // cell_report[i]->carrier_index = report_config->cc_report_type[i].cc_id;
+      // cell_report[i]->has_carrier_index = 1;
+      // cell_report[i]->flags = report_config->cc_report_type[i].cc_report_flags;
+      // cell_report[i]->has_flags = 1;
+     }
+ 
+
+    Protocol__FlexRrcMeasurements *rrc_measurements;
+    rrc_measurements = malloc(sizeof(Protocol__FlexRrcMeasurements));
+    if (rrc_measurements == NULL)
+        goto error;
+    protocol__flex_rrc_measurements__init(rrc_measurements);
+                            
+    rrc_measurements->measid = measResults->measId;
+    rrc_measurements->has_measid = 1;
+
+    rrc_measurements->pcell_rsrp = measResults->measResultPCell.rsrpResult - 140;
+    rrc_measurements->has_pcell_rsrp = 1;
+
+    rrc_measurements->pcell_rsrq = (measResults->measResultPCell.rsrqResult)/2 - 20;                          
+    rrc_measurements->has_pcell_rsrq = 1 ;
+
+    ue_report[0]->rrc_measurements = rrc_measurements;
+
+
+  // #else
+  //   repl->has_pcell_rsrp = 1;
+  //   repl->has_pcell_rsrq = 1;
+  //   repl->pcell_rsrp = RSRP_meas_mapping[meas->
+  //                       measResultServCell.rsrpResult];
+  //   repl->pcell_rsrq = RSRQ_meas_mapping[meas->
+  //                       measResultServCell.rsrqResult];
+  // #endif
+
+  // repl->neigh_meas = NULL;
+
+  // if (meas->measResultNeighCells != NULL) {
+  //   /*
+  //   * Neighboring cells measurements performed by UE.
+  //   */
+  //   NeighCellsMeasurements *neigh_meas;
+  //   neigh_meas = malloc(sizeof(NeighCellsMeasurements));
+  //   if (neigh_meas == NULL)
+  //     goto error;
+  //   neigh_cells_measurements__init(neigh_meas);
+
+  //   /* EUTRAN RRC Measurements. */
+  //   if (meas->measResultNeighCells->present ==
+  //         MeasResults__measResultNeighCells_PR_measResultListEUTRA) {
+
+  //     MeasResultListEUTRA_t meas_list = meas->measResultNeighCells->
+  //                         choice.measResultListEUTRA;
+  //     /* Set the number of EUTRAN measurements present in report. */
+  //     neigh_meas->n_eutra_meas = meas_list.list.count;
+  //     if (neigh_meas->n_eutra_meas > 0) {
+  //       /* Initialize EUTRAN measurements. */
+  //       EUTRAMeasurements **eutra_meas;
+  //       eutra_meas = malloc(sizeof(EUTRAMeasurements *) *
+  //                         neigh_meas->n_eutra_meas);
+  //       for (i = 0; i < neigh_meas->n_eutra_meas; i++) {
+  //         eutra_meas[i] = malloc(sizeof(EUTRAMeasurements));
+  //         eutra_measurements__init(eutra_meas[i]);
+  //         /* Fill in the physical cell identifier. */
+  //         eutra_meas[i]->has_phys_cell_id = 1;
+  //         eutra_meas[i]->phys_cell_id = meas_list.list.array[i]->
+  //                                 physCellId;
+  //         // log_i(agent,"PCI of Target %d", eutra_meas[i]->phys_cell_id);
+  //         /* Check for Reference signal measurements. */
+  //         if (&(meas_list.list.array[i]->measResult)) {
+  //           /* Initialize Ref. signal measurements. */
+  //           EUTRARefSignalMeas *meas_result;
+  //           meas_result = malloc(sizeof(EUTRARefSignalMeas));
+  //           eutra_ref_signal_meas__init(meas_result);
+
+  //           if (meas_list.list.array[i]->measResult.rsrpResult) {
+  //             meas_result->has_rsrp = 1;
+  //             meas_result->rsrp = RSRP_meas_mapping[*(meas_list.
+  //                   list.array[i]->measResult.rsrpResult)];
+  //             // log_i(agent,"RSRP of Target %d", meas_result->rsrp);
+  //           }
+
+  //           if (meas_list.list.array[i]->measResult.rsrqResult) {
+  //             meas_result->has_rsrq = 1;
+  //             meas_result->rsrq = RSRQ_meas_mapping[*(meas_list.
+  //                   list.array[i]->measResult.rsrqResult)];
+  //             // log_i(agent,"RSRQ of Target %d", meas_result->rsrq);
+  //           }
+  //           eutra_meas[i]->meas_result = meas_result;
+  //         }
+  //         /* Check for CGI measurements. */
+  //         if (meas_list.list.array[i]->cgi_Info) {
+  //           /* Initialize CGI measurements. */
+  //           EUTRACgiMeasurements *cgi_meas;
+  //           cgi_meas = malloc(sizeof(EUTRACgiMeasurements));
+  //           eutra_cgi_measurements__init(cgi_meas);
+
+  //           /* EUTRA Cell Global Identity (CGI). */
+  //           CellGlobalIdEUTRA *cgi;
+  //           cgi = malloc(sizeof(CellGlobalIdEUTRA));
+  //           cell_global_id__eutra__init(cgi);
+
+  //           cgi->has_cell_id = 1;
+  //           CellIdentity_t cId = meas_list.list.array[i]->
+  //                     cgi_Info->cellGlobalId.cellIdentity;
+  //           cgi->cell_id = (cId.buf[0] << 20) + (cId.buf[1] << 12) +
+  //                   (cId.buf[2] << 4) + (cId.buf[3] >> 4);
+
+  //           /* Public land mobile network identifier of neighbor
+  //            * cell.
+  //            */
+  //           PlmnIdentity *plmn_id;
+  //           plmn_id = malloc(sizeof(PlmnIdentity));
+  //           plmn_identity__init(plmn_id);
+
+  //           MNC_t mnc = meas_list.list.array[i]->
+  //                 cgi_Info->cellGlobalId.plmn_Identity.mnc;
+
+  //           plmn_id->has_mnc = 1;
+  //           plmn_id->mnc = 0;
+  //           for (m = 0; m < mnc.list.count; m++) {
+  //             plmn_id->mnc += *mnc.list.array[m] *
+  //               ((uint32_t) pow(10, mnc.list.count - m - 1));
+  //           }
+
+  //           MCC_t *mcc = meas_list.list.array[i]->
+  //                 cgi_Info->cellGlobalId.plmn_Identity.mcc;
+
+  //           plmn_id->has_mcc = 1;
+  //           plmn_id->mcc = 0;
+  //           for (m = 0; m < mcc->list.count; m++) {
+  //             plmn_id->mcc += *mcc->list.array[m] *
+  //               ((uint32_t) pow(10, mcc->list.count - m - 1));
+  //           }
+
+  //           TrackingAreaCode_t tac = meas_list.list.array[i]->
+  //                         cgi_Info->trackingAreaCode;
+
+  //           cgi_meas->has_tracking_area_code = 1;
+  //           cgi_meas->tracking_area_code = (tac.buf[0] << 8) +
+  //                               (tac.buf[1]);
+
+  //           PLMN_IdentityList2_t *plmn_l = meas_list.list.array[i]->
+  //                         cgi_Info->plmn_IdentityList;
+
+  //           cgi_meas->n_plmn_id = plmn_l->list.count;
+  //           /* Set the PLMN ID list in CGI measurements. */
+  //           PlmnIdentity **plmn_id_l;
+  //           plmn_id_l = malloc(sizeof(PlmnIdentity *) *
+  //                           cgi_meas->n_plmn_id);
+
+  //           MNC_t mnc2;
+  //           MCC_t *mcc2;
+  //           for (m = 0; m < cgi_meas->n_plmn_id; m++) {
+  //             plmn_id_l[m] = malloc(sizeof(PlmnIdentity));
+  //             plmn_identity__init(plmn_id_l[m]);
+
+  //             mnc2 = plmn_l->list.array[m]->mnc;
+  //             plmn_id_l[m]->has_mnc = 1;
+  //             plmn_id_l[m]->mnc = 0;
+  //             for (k = 0; k < mnc2.list.count; k++) {
+  //               plmn_id_l[m]->mnc += *mnc2.list.array[k] *
+  //               ((uint32_t) pow(10, mnc2.list.count - k - 1));
+  //             }
+
+  //             mcc2 = plmn_l->list.array[m]->mcc;
+  //             plmn_id_l[m]->has_mcc = 1;
+  //             plmn_id_l[m]->mcc = 0;
+  //             for (k = 0; k < mcc2->list.count; k++) {
+  //               plmn_id_l[m]->mcc += *mcc2->list.array[k] *
+  //               ((uint32_t) pow(10, mcc2->list.count - k - 1));
+  //             }
+  //           }
+  //           cgi_meas->plmn_id = plmn_id_l;
+  //           eutra_meas[i]->cgi_meas = cgi_meas;
+  //         }
+  //       }
+  //       neigh_meas->eutra_meas = eutra_meas;
+  //     }
+  //   }
+  //   repl->neigh_meas = neigh_meas;
+  // }
+  /* Attach the RRC measurement reply message to RRC measurements message. */
+  // mrrc_meas->repl = repl;
+  /* Attach RRC measurement message to triggered event message. */
+  // te->mrrc_meas = mrrc_meas;
+  // te->has_action = 0;
+  /* Attach the triggered event message to main message. */
+  // reply->te = te;
+
+  /* Send the report to controller. */
+  // if (flexran_agent_msg_send(b_id, reply) < 0) {
+  //   goto error;
+  // }
+
+  /* Free the measurement report received from UE. */
+  // ASN_STRUCT_FREE(asn_DEF_MeasResults, p->meas);
+  /* Free the params. */
+  // free(p);
+
+
+  stats_reply_msg->cell_report = cell_report;
+    
+  stats_reply_msg->ue_report = ue_report;
+  
+  msg = malloc(sizeof(Protocol__FlexranMessage));
+  if(msg == NULL)
+    goto error;
+  protocol__flexran_message__init(msg);
+  msg->msg_case = PROTOCOL__FLEXRAN_MESSAGE__MSG_STATS_REPLY_MSG;
+  msg->msg_dir = PROTOCOL__FLEXRAN_DIRECTION__SUCCESSFUL_OUTCOME;
+  msg->stats_reply_msg = stats_reply_msg;
+  
+  data = flexran_agent_pack_message(msg, &size);
+  
+  
+  if (flexran_agent_msg_send(mod_id, FLEXRAN_AGENT_DEFAULT, data, size, priority)) {
+  
+    err_code = PROTOCOL__FLEXRAN_ERR__MSG_ENQUEUING;
+    goto error;
+  }
+  
+   LOG_I(FLEXRAN_AGENT,"RRC Trigger is done  \n");
+
+  return 0;
+
+  error:
+
+    LOG_E(RRC, "Error triggering RRC measurements message!");
+    /* Free the measurement report received from UE. */
+    // ASN_STRUCT_FREE(asn_DEF_MeasResults, p->meas);
+    /* Free the params. */
+    // free(p);
+    return -1;
+}
+
 
 int flexran_agent_register_rrc_xface(mid_t mod_id, AGENT_RRC_xface *xface) {
   if (rrc_agent_registered[mod_id]) {
@@ -399,7 +750,7 @@ int flexran_agent_register_rrc_xface(mid_t mod_id, AGENT_RRC_xface *xface) {
 //  xface->flexran_agent_send_update_rrc_stats = flexran_agent_send_update_rrc_stats;
   
   xface->flexran_agent_notify_ue_state_change = flexran_agent_ue_state_change;
-  
+  xface->flexran_trigger_rrc_measurements = flexran_trigger_rrc_measurements;
 
   rrc_agent_registered[mod_id] = 1;
   agent_rrc_xface[mod_id] = xface;
