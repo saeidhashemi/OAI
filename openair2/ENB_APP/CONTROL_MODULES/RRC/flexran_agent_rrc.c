@@ -487,7 +487,6 @@ int flexran_trigger_rrc_measurements (mid_t mod_id, MeasResults_t*  measResults)
           goto error;
       protocol__flex_ue_stats_report__init(ue_report[i]);
       ue_report[i]->rnti = flexran_get_ue_crnti(mod_id, 0);
-      printf("----------> rnti : %d \n", ue_report[i]->rnti);
       ue_report[i]->has_rnti = 1;
        ue_report[i]->flags = 65536;
        ue_report[i]->has_flags = 1;

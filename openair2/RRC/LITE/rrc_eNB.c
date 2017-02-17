@@ -1886,9 +1886,9 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
     ReportConfig_per->reportConfig.choice.reportConfigEUTRA.triggerQuantity = ReportConfigEUTRA__triggerQuantity_rsrp;
    ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportQuantity = ReportConfigEUTRA__reportQuantity_both;
    ReportConfig_per->reportConfig.choice.reportConfigEUTRA.maxReportCells = 2;
-   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportInterval = ReportInterval_ms5120; 
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportInterval = flexran_get_rrc_report_interval(0); 
 
-   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportAmount = ReportConfigEUTRA__reportAmount_r8; // put r1 to see once, r2 for 2 times and ...
+   ReportConfig_per->reportConfig.choice.reportConfigEUTRA.reportAmount = flexran_get_rrc_report_amount(0); // from input file
 
 
   ASN_SEQUENCE_ADD(&ReportConfig_list->list, ReportConfig_per);
@@ -2273,20 +2273,20 @@ rrc_eNB_process_MeasurementReport(
   //   T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
 
-  LOG_I(RRC, "[eNB %d] Frame %d: Process Measurement Report From UE %x (Measurement Id %d)\n",
-        ctxt_pP->module_id, ctxt_pP->frame, ctxt_pP->rnti, measResults2->measId);
+  // LOG_I(RRC, "[eNB %d] Frame %d: Process Measurement Report From UE %x (Measurement Id %d)\n",
+        // ctxt_pP->module_id, ctxt_pP->frame, ctxt_pP->rnti, measResults2->measId);
 
-/*  if (measResults2->measResultNeighCells->choice.measResultListEUTRA.list.count > 0) {
-      
-    LOG_I(RRC, "Physical Cell Id %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->physCellId);
-    LOG_I(RRC, "RSRP of Target %d\n",
-          (int)*(measResults2->measResultNeighCells.choice.measResultListEUTRA.list.array[0]->
-                 measResult.rsrpResult));
-    LOG_I(RRC, "RSRQ of Target %d\n",
-          (int)*(measResults2->measResultNeighCells.choice.measResultListEUTRA.list.array[0]->
-                 measResult.rsrqResult));
-  }
-*/
+  // if (measResults2->measResultNeighCells->choice.measResultListEUTRA.list.count > 0) {
+    
+    // LOG_I(RRC, "Physical Cell Id %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->physCellId);
+    // LOG_I(RRC, "RSRP of Target %d\n",
+    //       (int)*(measResults2->measResultNeighCells.choice.measResultListEUTRA.list.array[0]->
+    //              measResult.rsrpResult));
+    // LOG_I(RRC, "RSRQ of Target %d\n",
+    //       (int)*(measResults2->measResultNeighCells.choice.measResultListEUTRA.list.array[0]->
+    //              measResult.rsrqResult));
+  // }
+
 
  
   LOG_W(RRC, "RSRP of Primary Cell is %d dbm \n", measResults2->measResultPCell.rsrpResult - 140);

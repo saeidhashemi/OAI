@@ -1038,7 +1038,7 @@ int flexran_agent_lc_config_reply(mid_t mod_id, const void *params, Protocol__Fl
 	  }
 	 
 	  lc_config[j]->has_direction = 1;
-	  lc_config[j]->direction = flexran_get_direction(i,j+1);
+	  lc_config[j]->direction = flexran_get_direction(i, j+1);
 	  //TODO: Bearer type. One of FLQBT_* values. Currently only default bearer supported
 	  lc_config[j]->has_qos_bearer_type = 1;
 	  lc_config[j]->qos_bearer_type = PROTOCOL__FLEX_QOS_BEARER_TYPE__FLQBT_NON_GBR;
@@ -1046,7 +1046,8 @@ int flexran_agent_lc_config_reply(mid_t mod_id, const void *params, Protocol__Fl
 	  //TODO: Set the QCI defined in TS 23.203, coded as defined in TS 36.413
 	  // One less than the actual QCI value. Needs to be generalized
 	  lc_config[j]->has_qci = 1;
-	  lc_config[j]->qci = 1;
+	  lc_config[j]->qci = flexran_get_lc_qos_qci(mod_id, 0); // ue_id : 0
+
 	  if (lc_config[j]->direction == PROTOCOL__FLEX_QOS_BEARER_TYPE__FLQBT_GBR) {
 	    //TODO: Set the max bitrate (UL)
 	    lc_config[j]->has_e_rab_max_bitrate_ul = 0;

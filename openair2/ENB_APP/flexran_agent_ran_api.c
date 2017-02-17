@@ -63,6 +63,17 @@ void flexran_set_enb_vars(mid_t mod_id, ran_name_t ran){
   */
 
 
+int flexran_get_rrc_report_amount(mid_t mod_id) {
+	Enb_properties_array_t *enb_properties;
+	enb_properties = enb_config_get();
+	return enb_properties->properties[mod_id]->rrc_report_amount;
+}
+
+int flexran_get_rrc_report_interval(mid_t mod_id) {
+	Enb_properties_array_t *enb_properties;
+	enb_properties = enb_config_get();
+	return enb_properties->properties[mod_id]->rrc_report_interval;
+}
 
 
 int  flexran_get_map_CC_id_rnti_downlink (mid_t mod_id, int CC_index, uint16_t ue_rnti) {
@@ -1128,3 +1139,23 @@ int flexran_get_intra_sf_hopping(mid_t ue_id) {
   //return (0 & ( 1 << (31)));
 }
 
+// LC config RAN APIs
+
+int flexran_get_lc_qos_qci(mid_t mod_id, mid_t ue_id){
+
+ struct rrc_eNB_ue_context_s* ue_context_p = NULL;
+ uint32_t rntiP = flexran_get_ue_crnti(mod_id, ue_id);
+
+ ue_context_p = rrc_eNB_get_ue_context(&eNB_rrc_inst[mod_id], rntiP);
+
+   if(enb_ue_context[mod_id] != NULL) {
+
+    return enb_ue_context[mod_id]->ue_context.e_rab[1].param.qos.qci;
+
+  }
+
+
+  return -1;
+
+
+}
