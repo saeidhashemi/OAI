@@ -53,6 +53,9 @@
 
 #include "header.pb-c.h"
 #include "flexran.pb-c.h"
+#include "flexran_agent_extern.h"
+
+#include "flexran_agent_common.h"
 
 #include "SIMULATION/TOOLS/defs.h" // for taus
 
@@ -121,6 +124,7 @@ void flexran_apply_ue_spec_scheduling_decisions(mid_t mod_id,
   
   // For each UE-related command
   for (i = 0; i < n_dl_ue_data; i++) {
+
 
       
 	    dl_data = dl_ue_data[i];
@@ -365,6 +369,7 @@ void flexran_apply_ue_spec_scheduling_decisions(mid_t mod_id,
 			      //UE_list->eNB_UE_stats[CC_id][UE_id].total_rbs_used_retx+=nb_rb;
 			      //UE_list->eNB_UE_stats[CC_id][UE_id].ncce_used_retx=nCCECC_id];
 	    }
+
 
 	    UE_list->UE_template[CC_id][UE_id].oldNDI[dl_dci->harq_process] = dl_dci->ndi[0];
 	    eNB_UE_stats->dlsch_mcs1 = dl_dci->mcs[0];

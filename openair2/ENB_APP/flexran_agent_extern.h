@@ -51,4 +51,9 @@ extern AGENT_RRC_xface *agent_rrc_xface[NUM_MAX_ENB];
 /* Flag indicating whether the VSFs for the RRC control module have been registered */
 extern unsigned int rrc_agent_registered[NUM_MAX_ENB];
 
+/* Requried to know which UEs had a harq updated over some subframe */
+extern int harq_pid_updated[NUMBER_OF_UE_MAX][8];
+extern int harq_pid_round[NUMBER_OF_UE_MAX][8];
+
+
 #endif

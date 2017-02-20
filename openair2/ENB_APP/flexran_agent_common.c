@@ -349,6 +349,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
             if(cell_conf == NULL)
               goto error;
 
+
             for(i = 0; i < enb_config_reply_msg->n_cell_config; i++){
 
                       cell_conf[i] = malloc(sizeof(Protocol__FlexCellConfig));
@@ -359,7 +360,6 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       cell_conf[i]->cell_id = i;
                       cell_conf[i]->has_cell_id = 1;
-
 
                       cell_conf[i]->pusch_hopping_offset = flexran_get_hopping_offset(enb_id,i);
                       cell_conf[i]->has_pusch_hopping_offset = 1;
@@ -382,6 +382,7 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       if (flexran_get_phich_resource(enb_id,i) == 0) {
 
+
                             cell_conf[i]->phich_resource = PROTOCOL__FLEX_PHICH_RESOURCE__FLPR_ONE_SIXTH; //0
 
                       } 
@@ -392,9 +393,11 @@ int flexran_agent_enb_config_reply(mid_t mod_id, const void *params, Protocol__F
 
                       }
 
+
                       else if (flexran_get_phich_resource(enb_id,i) == 2) {
 
                             cell_conf[i]->phich_resource = PROTOCOL__FLEX_PHICH_RESOURCE__FLPR_ONE; // 2
+
 
                       }
 

@@ -160,8 +160,6 @@ int flexran_agent_destroy_stats_request(Protocol__FlexranMessage *msg);
  
 err_code_t flexran_agent_enable_cont_stats_update(mid_t mod_id, xid_t xid, stats_request_config_t *stats_req) ;
 
-
 int flexran_agent_stats_request(mid_t mod_id, xid_t xid,  const stats_request_config_t *report_config, Protocol__FlexranMessage **msg);
-
 
 #endif

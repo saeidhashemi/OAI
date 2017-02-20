@@ -959,7 +959,6 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
   int32_t                 tpc = 1;
   static int32_t          tpc_accumulated=0;
   UE_sched_ctrl           *ue_sched_ctl;
-
   LTE_eNB_UE_stats     *eNB_UE_stats     = NULL;
   Protocol__FlexDlData *dl_data[NUM_MAX_UE];
   int num_ues_added = 0;
@@ -1029,8 +1028,15 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
     for (UE_id=UE_list->head; UE_id>=0; UE_id=UE_list->next[UE_id]) {
   
       rnti = flexran_get_ue_crnti(mod_id, UE_id);
+      eNB_UE_stats = mac_xface->get_eNB_UE_stats(mod_id,CC_id,rnti);
       ue_sched_ctl = &UE_list->UE_sched_ctrl[UE_id];
-
+      
+      if (eNB_UE_stats==NULL) {
+	LOG_D(MAC,"[eNB] Cannot find eNB_UE_stats\n");
+        //  mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
+	continue;
+      }
+      
       if (flexran_slice_member(UE_id, slice_id) == 0)
       	continue;
       
@@ -1040,11 +1046,26 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
         continue;
       }
 
-      if ((ue_sched_ctl->pre_nb_available_rbs[CC_id] == 0) ) {
-	continue;
+      switch(mac_xface->get_transmission_mode(mod_id,CC_id,rnti)){
+      case 1:
+      case 2:
+      case 7:
+	aggregation = get_aggregation(get_bw_index(mod_id,CC_id), 
+				      eNB_UE_stats->DL_cqi[0],
+				      format1);
+	break;
+      case 3:
+	aggregation = get_aggregation(get_bw_index(mod_id,CC_id), 
+				      eNB_UE_stats->DL_cqi[0],
+				      format2A);
+	break;
+      default:
+	LOG_W(MAC,"Unsupported transmission mode %d\n", mac_xface->get_transmission_mode(mod_id,CC_id,rnti));
+	aggregation = 2;
       }
-
-      if (CCE_allocation_infeasible(mod_id, CC_id, 0, subframe, aggregation, rnti)) {
+     
+      if ((ue_sched_ctl->pre_nb_available_rbs[CC_id] == 0) ||  // no RBs allocated 
+	  CCE_allocation_infeasible(mod_id, CC_id, 0, subframe, aggregation, rnti)) {
         LOG_D(MAC,"[eNB %d] Frame %d : no RB allocated for UE %d on CC_id %d: continue \n",
               mod_id, frame, UE_id, CC_id);
         //if(mac_xface->get_transmission_mode(module_idP,rnti)==5)
@@ -1157,8 +1178,6 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
 	  }
 
 	  nb_available_rb -= nb_rb;
-	  aggregation = process_ue_cqi(mod_id, UE_id);
-	  
 	  PHY_vars_eNB_g[mod_id][CC_id]->mu_mimo_mode[UE_id].pre_nb_available_rbs = nb_rb;
 	  PHY_vars_eNB_g[mod_id][CC_id]->mu_mimo_mode[UE_id].dl_pow_off = ue_sched_ctl->dl_pow_off[CC_id];
 	  
@@ -1192,7 +1211,7 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
         // check first for RLC data on DCCH
         // add the length for  all the control elements (timing adv, drx, etc) : header + payload
 
-	ta_len = (ue_sched_ctl->ta_update!=0) ? 2 : 0;
+	ta_len = (ue_sched_ctl->ta_update != 0) ? 2 : 0;
 	
 	dl_data[num_ues_added]->n_ce_bitmap = 2;
 	dl_data[num_ues_added]->ce_bitmap = (uint32_t *) calloc(2, sizeof(uint32_t));
@@ -1375,7 +1394,6 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
 	  mcs = mcs_tmp;
 	  LOG_D(FLEXRAN_AGENT, "Final mcs was %d\n", mcs); 
 	  
-	  aggregation = process_ue_cqi(mod_id,UE_id);
 	  dl_dci->has_aggr_level = 1;
 	  dl_dci->aggr_level = aggregation;
 	  
@@ -1400,7 +1418,6 @@ flexran_schedule_ue_spec_common(mid_t   mod_id,
 	      ((framex10psubframe>(frame*10+subframe)) && (((10240-framex10psubframe+frame*10+subframe)>=10)))) //frame wrap-around
 	    if (flexran_get_p0_pucch_status(mod_id, UE_id, CC_id) == 1) {
   	      flexran_update_p0_pucch(mod_id, UE_id, CC_id);
-
 
 	      UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_frame = frame;
 	      UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_subframe = subframe;
