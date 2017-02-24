@@ -132,11 +132,20 @@ rlc_um_receive (
   mem_block_t        *tb_p             = NULL;
   uint8_t               *first_byte_p     = NULL;
   uint16_t               tb_size_in_bytes = 0;
+  uint16_t sn;
 
   while ((tb_p = list_remove_head (&data_indP.data))) {
 
     first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
     tb_size_in_bytes = ((struct mac_tb_ind *) (tb_p->data))->size;
+
+    sn = (((*first_byte_p) << 8) | (*(first_byte_p + 1))) & 0x3FF;
+    if (tb_size_in_bytes != data_indP.tb_size) {
+        printf(" WARNING RLC UM RX Inconsistent PDU size : MAC DataInd = %d, MemBlock = %d SN=%d!!\n",
+                data_indP.tb_size,tb_size_in_bytes,sn);
+    }
+    //AssertFatal(tb_size_in_bytes == data_indP.tb_size,"RLC UM RX Inconsistent PDU size : MAC DataInd = %d, MemBlock = %d SN=%d\n",
+     //       data_indP.tb_size,tb_size_in_bytes,sn);
 
     rlc_pP->stat_rx_data_bytes += tb_size_in_bytes;
     rlc_pP->stat_rx_data_pdu   += 1;

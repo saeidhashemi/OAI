@@ -131,7 +131,35 @@ int rlc_um_read_length_indicators(unsigned char**data_ppP, rlc_um_e_li_t* e_liP,
   unsigned int li2 = 0;
   *num_li_pP = 0;
   int pdu_size = *data_size_pP;
+  uint8_t li_bit_offset = 4; /* toggle between 0 and 4 */
+  uint8_t li_jump_offset = 1; /* toggle between 1 and 2 */
+  uint8_t e_bit = 1;
+  uint32_t temp = 0;
+  sdu_size_t data_save = *data_size_pP;
+  unsigned char* pdu_original_header_p = *data_ppP;
+  unsigned char* pdu_header_p = pdu_original_header_p;
 
+#define RLC_AM_LI_MASK 0x7FF
+#define RLC_AM_LI_BITS 11
+#define RLC_AM_PDU_GET_LI(x,offset)       (((x) >> (offset)) & RLC_AM_LI_MASK)
+#define  RLC_GET_BIT(x,offset)      (((x) & (1 << (offset))) >> (offset))
+
+
+    while (e_bit)
+    {
+        temp = ((*pdu_original_header_p) << 8) | ((*(pdu_original_header_p + 1)) & 0xFF);
+        e_bit = RLC_GET_BIT(temp,li_bit_offset + RLC_AM_LI_BITS);
+        li1 = RLC_AM_PDU_GET_LI(temp,li_bit_offset);
+        li_array_pP[*num_li_pP] = li1;
+        (*num_li_pP) += 1;
+        pdu_original_header_p += li_jump_offset;
+        li_bit_offset ^= 0x4;
+        li_jump_offset ^= 0x3;
+        *data_size_pP = *data_size_pP - li1;
+    }
+
+    *data_size_pP = *data_size_pP - ((*num_li_pP) + ((*num_li_pP) >> 1) + ((*num_li_pP) & 1));
+#if 0
   while ((continue_loop)) {
     //msg("[RLC_UM] e_liP->b1 = %02X\n", e_liP->b1);
     //msg("[RLC_UM] e_liP->b2 = %02X\n", e_liP->b2);
@@ -187,14 +215,26 @@ int rlc_um_read_length_indicators(unsigned char**data_ppP, rlc_um_e_li_t* e_liP,
       return -1;
     }
   }
+#endif
 
-  *data_ppP = *data_ppP + (((*num_li_pP*3) +1) >> 1);
+  //*data_ppP = *data_ppP + (((*num_li_pP*3) +1) >> 1);
+  *data_ppP = *data_ppP + ((*num_li_pP) + ((*num_li_pP) >> 1) + ((*num_li_pP) & 1));
   if (*data_size_pP > 0) {
     return 0;
   } else if (*data_size_pP == 0) {
+      printf(" header first 8 bytes %x %x %x %x %x %x %x %x\n",
+               *pdu_header_p,*(pdu_header_p + 1),*(pdu_header_p + 2),*(pdu_header_p + 3),
+               *(pdu_header_p + 4),*(pdu_header_p + 5),*(pdu_header_p + 6),*(pdu_header_p + 7));
+
     LOG_W(RLC, "Last RLC SDU size is zero!\n");
     return -1;
   } else {
+      for (int i=0; i < *num_li_pP; i++) {
+        printf("%d \n",li_array_pP[i]);
+      }
+
+      printf(" num_li =%d original data size = %d\n",*num_li_pP,data_save);
+
     LOG_W(RLC, "Last RLC SDU size is negative %d!\n", *data_size_pP);
     return -1;
   }
@@ -407,19 +447,22 @@ rlc_um_try_reassembly(
                        __LINE__);
         }
       } else {
+          printf("RLC reassemble SN=%d PDU size = %d\n",sn,size + 2);
         if (rlc_um_read_length_indicators(&data_p, e_li_p, li_array, &num_li, &size ) >= 0) {
           switch (fi) {
           case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-#if TRACE_RLC_UM_DAR
-            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=11 (00) Li=",
-                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+//#if TRACE_RLC_UM_DAR
+            LOG_I(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=11 (00) numLi=%d ",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),num_li);
 
             for (i=0; i < num_li; i++) {
-              LOG_D(RLC, "%d ",li_array[i]);
+              printf("%d ",li_array[i]);
             }
 
-            LOG_D(RLC, " remaining size %d\n",size);
-#endif
+            printf(" read offset = %d ",data_p - tb_ind_p->data_ptr);
+
+            printf(" remaining size %d\n",size);
+//#endif
             // N complete SDUs
             //LGrlc_um_send_sdu(rlc_pP,ctxt_pP->frame,ctxt_pP->enb_flag);
             rlc_um_clear_rx_sdu(ctxt_pP, rlc_pP);
@@ -440,16 +483,18 @@ rlc_um_try_reassembly(
             break;
 
           case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-#if TRACE_RLC_UM_DAR
-            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=10 (01) Li=",
-                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+//#if TRACE_RLC_UM_DAR
+              LOG_I(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=10 (01) numLi=%d ",
+                    PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),num_li);
 
-            for (i=0; i < num_li; i++) {
-              LOG_D(RLC, "%d ",li_array[i]);
-            }
+              for (i=0; i < num_li; i++) {
+                printf("%d ",li_array[i]);
+              }
 
-            LOG_D(RLC, " remaining size %d\n",size);
-#endif
+              printf(" read offset = %d ",data_p - tb_ind_p->data_ptr);
+
+              printf(" remaining size %d\n",size);
+//#endif
             // N complete SDUs + one segment of SDU in PDU
             //LG rlc_um_send_sdu(rlc_pP,ctxt_pP->frame,ctxt_pP->enb_flag);
             rlc_um_clear_rx_sdu(ctxt_pP, rlc_pP);
@@ -469,16 +514,18 @@ rlc_um_try_reassembly(
             break;
 
           case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-#if TRACE_RLC_UM_DAR
-            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=01 (10) Li=",
-                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+//#if TRACE_RLC_UM_DAR
+              LOG_I(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=01 (10) numLi=%d ",
+                    PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),num_li);
 
-            for (i=0; i < num_li; i++) {
-              LOG_D(RLC, "%d ",li_array[i]);
-            }
+              for (i=0; i < num_li; i++) {
+                printf("%d ",li_array[i]);
+              }
 
-            LOG_D(RLC, " remaining size %d\n",size);
-#endif
+              printf(" read offset = %d ",data_p - tb_ind_p->data_ptr);
+
+              printf(" remaining size %d\n",size);
+//#endif
 
             if (rlc_pP->reassembly_missing_sn_detected) {
               reassembly_start_index = 1;
@@ -506,16 +553,18 @@ rlc_um_try_reassembly(
             break;
 
           case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-#if TRACE_RLC_UM_DAR
-            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=00 (11) Li=",
-                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+//#if TRACE_RLC_UM_DAR
+              LOG_I(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=00 (11) numLi=%d ",
+                    PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),num_li);
 
-            for (i=0; i < num_li; i++) {
-              LOG_D(RLC, "%d ",li_array[i]);
-            }
+              for (i=0; i < num_li; i++) {
+                printf("%d ",li_array[i]);
+              }
 
-            LOG_D(RLC, " remaining size %d\n",size);
-#endif
+              printf(" read offset = %d ",data_p - tb_ind_p->data_ptr);
+
+              printf(" remaining size %d\n",size);
+//#endif
 
             if (rlc_pP->reassembly_missing_sn_detected) {
 #if TRACE_RLC_UM_DAR
@@ -997,6 +1046,7 @@ rlc_um_receive_process_dar (
   signed int in_window;
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_IN);
+
 
   if (rlc_pP->rx_sn_length == 10) {
     sn = ((pdu_pP->b1 & 0x00000003) << 8) + pdu_pP->b2;

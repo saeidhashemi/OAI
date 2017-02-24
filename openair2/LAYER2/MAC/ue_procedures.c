@@ -189,8 +189,10 @@ unsigned char *parse_header(unsigned char *mac_header,
       }
 
 #ifdef DEBUG_HEADER_PARSING
-      LOG_D(MAC,"[UE] sdu %d lcid %d length %d (offset now %ld)\n",
-            num_sdus,lcid,length,mac_header_ptr-mac_header);
+      if (lcid == 3) {
+          LOG_D(MAC,"[UE] sdu %d lcid %d length %d TBS %d (offset now %d)\n",
+                num_sdus,lcid,length,tb_length,mac_header_ptr-mac_header);
+      }
 #endif
       rx_lcids[num_sdus] = lcid;
       rx_lengths[num_sdus] = length;
@@ -476,8 +478,8 @@ ue_send_sdu(
                        NULL);
  
     } else if ((rx_lcids[i]  < NB_RB_MAX) && (rx_lcids[i] > DCCH1 )) {
-      
-      LOG_D(MAC,"[UE %d] Frame %d : DLSCH -> DL-DTCH%d (eNB %d, %d bytes)\n", module_idP, frameP,rx_lcids[i], eNB_index,rx_lengths[i]);
+      uint16_t rlc_sn = (((*payload_ptr) << 8) | (*(payload_ptr + 1))) & 0x3FF;
+      LOG_I(MAC,"[UE %d] Frame %d subframe %d: DLSCH -> DL-DTCH%d (eNB %d, %d bytes) RLC SN = %d\n", module_idP,frameP,subframeP,rx_lcids[i], eNB_index,rx_lengths[i],rlc_sn & 0x3FF);
 
 #if defined(ENABLE_MAC_PAYLOAD_DEBUG)
       int j;

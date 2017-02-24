@@ -691,6 +691,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     fl_set_xyplot_data(form->pbch_comp,I,Q,72*2,"","","");
   }
 
+  /*
   // PDCCH LLRs
   if (pdcch_llr != NULL) {
     for (i=0; i<12*frame_parms->N_RB_DL*2*num_pdcch_symbols; i++) {
@@ -722,7 +723,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     fl_set_xyplot_xbounds(form->pdsch_llr,0,coded_bits_per_codeword);
     fl_set_xyplot_data(form->pdsch_llr,bit,llr,coded_bits_per_codeword,"","","");
   }
-
+  */
   // PDSCH I/Q of MF Output
   if (pdsch_comp!=NULL) {
     ind=0;

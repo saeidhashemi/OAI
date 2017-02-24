@@ -229,7 +229,7 @@ struct mac_data_req {
 struct mac_data_ind {
   list_t                     data;   /*!  the RLC layer messages that have been received by the MAC sub-layer*/
   unsigned short             no_tb;
-  unsigned short             tb_size;      // in bits
+  unsigned int             tb_size;      // in bits
   //unsigned char              error_indication;
 };
 
