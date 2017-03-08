@@ -274,59 +274,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     } // ul_failure_timer>0
   }
 
-#if defined(ENABLE_ITTI)
 
-  do {
-    // Checks if a message has been sent to MAC sub-task
-    itti_poll_msg (TASK_MAC_ENB, &msg_p);
-
-    if (msg_p != NULL) {
-      msg_name = ITTI_MSG_NAME (msg_p);
-      instance = ITTI_MSG_INSTANCE (msg_p);
-
-      switch (ITTI_MSG_ID(msg_p)) {
-      case MESSAGE_TEST:
-        LOG_D(MAC, "Received %s\n", ITTI_MSG_NAME(msg_p));
-        break;
-
-      case RRC_MAC_BCCH_DATA_REQ:
-        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
-              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-              RRC_MAC_BCCH_DATA_REQ (msg_p).frame, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
-
-        // TODO process BCCH data req.
-        break;
-
-      case RRC_MAC_CCCH_DATA_REQ:
-        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
-              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-              RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
-
-        // TODO process CCCH data req.
-        break;
-
-#ifdef Rel10
-
-      case RRC_MAC_MCCH_DATA_REQ:
-        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d, mbsfn_sync_area %d\n",
-              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-              RRC_MAC_MCCH_DATA_REQ (msg_p).frame, RRC_MAC_MCCH_DATA_REQ (msg_p).enb_index, RRC_MAC_MCCH_DATA_REQ (msg_p).mbsfn_sync_area);
-
-        // TODO process MCCH data req.
-        break;
-#endif
-
-      default:
-        LOG_E(MAC, "Received unexpected message %s\n", msg_name);
-        break;
-      }
-
-      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
-      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
-    }
-  } while(msg_p != NULL);
-
-#endif
 
 /* #ifndef DISABLE_SF_TRIGGER */
 /*   //Send subframe trigger to the controller */
@@ -338,7 +286,13 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   //if (subframeP%5 == 0)
   //#ifdef EXMIMO
   PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, ENB_FLAG_YES, NOT_A_RNTI, frameP, subframeP,module_idP);
+
+  /* 
+    PDCP Running Task
+  */
+
   pdcp_run(&ctxt);
+  
   //#endif
 
   // check HO
@@ -1124,6 +1078,65 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     break;
 
   }
+
+#if defined(ENABLE_ITTI)
+
+  do {
+    // Checks if a message has been sent to MAC sub-task
+    itti_poll_msg (TASK_MAC_ENB, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+
+      switch (ITTI_MSG_ID(msg_p)) {
+      case MESSAGE_TEST:
+        LOG_D(MAC, "Received %s\n", ITTI_MSG_NAME(msg_p));
+        break;
+
+      case RRC_MAC_BCCH_DATA_REQ:
+        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
+              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+              RRC_MAC_BCCH_DATA_REQ (msg_p).frame, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
+
+        // TODO process BCCH data req.
+        break;
+
+      case RRC_MAC_CCCH_DATA_REQ:
+        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
+              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+              RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
+
+        // TODO process CCCH data req.
+        break;
+
+#ifdef Rel10
+
+      case RRC_MAC_MCCH_DATA_REQ:
+        LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d, mbsfn_sync_area %d\n",
+              msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+              RRC_MAC_MCCH_DATA_REQ (msg_p).frame, RRC_MAC_MCCH_DATA_REQ (msg_p).enb_index, RRC_MAC_MCCH_DATA_REQ (msg_p).mbsfn_sync_area);
+
+        // TODO process MCCH data req.
+        break;
+#endif
+
+      default:
+        LOG_E(MAC, "Received unexpected message %s\n", msg_name);
+        break;
+      }
+
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
+    }
+  } while(msg_p != NULL);
+
+#endif
+
+
+
+
+
 
   LOG_D(MAC,"FrameP %d, subframeP %d : Scheduling CCEs\n",frameP,subframeP);
 

@@ -722,8 +722,8 @@ printf("MAC: msg4 retransmission for rnti %x (round %d) fsf %d/%d CCE allocation
 		  remove UE instance across all the layers: mac_xface->cancel_RA();
 		  }
 	  */
-printf("MAC: msg4 acknowledged for rnti %x fsf %d/%d, let's configure it\n", RA_template->rnti, frameP, subframeP);
-	  LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d, subframeP %d : Msg4 acknowledged\n",module_idP,CC_id,frameP,subframeP);
+    LOG_I(MAC, "msg4 acknowledged for rnti %x fsf %d/%d, let's configure it\n", RA_template->rnti, frameP, subframeP);
+	  LOG_N(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d, subframeP %d : Msg4 acknowledged\n",module_idP,CC_id,frameP,subframeP);
 	  RA_template->wait_ack_Msg4=0;
 	  RA_template->RA_active=FALSE;
 	  UE_id = find_UE_id(module_idP,RA_template->rnti);

@@ -394,32 +394,34 @@ rrc_pdcp_config_security(
 #define msg printf
 
   if (print_keys ==1 ) {
-    print_keys =0;
-    int i;
-    msg("\nKeNB:");
+    // print_keys =0;
+    // int i;
+    // msg("\nKeNB:");
 
-    for(i = 0; i < 32; i++) {
-      msg("%02x", ue_context_pP->ue_context.kenb[i]);
-    }
+    // for(i = 0; i < 32; i++) {
+    //   msg("%02x", ue_context_pP->ue_context.kenb[i]);
+    // }
 
-    msg("\n");
+    // msg("\n");
 
-    msg("\nKRRCenc:");
+    // msg("\nKRRCenc:");
 
-    for(i = 0; i < 32; i++) {
-      msg("%02x", kRRCenc[i]);
-    }
+    // for(i = 0; i < 32; i++) {
+    //   msg("%02x", kRRCenc[i]);
+    // }
 
-    msg("\n");
+    // msg("\n");
 
-    msg("\nKRRCint:");
+    // msg("\nKRRCint:");
 
-    for(i = 0; i < 32; i++) {
-      msg("%02x", kRRCint[i]);
-    }
+    // for(i = 0; i < 32; i++) {
+    //   msg("%02x", kRRCint[i]);
+    // }
 
-    msg("\n");
+    // msg("\n");
 
+  LOG_I(RRC, "KeNB, kRRCenb and KRRCint are successfully created");
+  
   }
 
 #endif //DEBUG_SECURITY

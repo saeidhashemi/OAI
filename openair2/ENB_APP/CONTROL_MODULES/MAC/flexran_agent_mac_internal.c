@@ -652,7 +652,7 @@ int parse_dl_scheduler_parameters(mid_t mod_id, yaml_parser_t *parser) {
           if (param == NULL) {
             goto error;
           }
-          apply_parameter_modification(param, parser);
+          flexran_apply_parameter_modification(param, parser);
 
       }
 

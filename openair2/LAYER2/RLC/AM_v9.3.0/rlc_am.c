@@ -1161,7 +1161,14 @@ rlc_am_data_req (
 
 
     memset(&l_rlc_p->input_sdus[l_rlc_p->next_sdu_index], 0, sizeof(rlc_am_tx_sdu_management_t));
+    
+    /*
+      SDU Upper Data
+     */
+
     l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block = sdu_pP;
+
+
 
     mui         = ((struct rlc_am_data_req *) (sdu_pP->data))->mui;
     data_offset = ((struct rlc_am_data_req *) (sdu_pP->data))->data_offset;
@@ -1233,14 +1240,14 @@ rlc_am_data_req (
     l_rlc_p->stat_tx_pdcp_sdu   += 1;
     l_rlc_p->stat_tx_pdcp_bytes += data_size;
 
-    l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mui      = mui;
-    l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_size = data_size;
-    //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].confirm  = conf;
-
     l_rlc_p->sdu_buffer_occupancy += data_size;
     l_rlc_p->nb_sdu += 1;
     l_rlc_p->nb_sdu_no_segmented += 1;
 
+
+    l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mui      = mui;
+    l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_size = data_size;
+    //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].confirm  = conf;
     l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].first_byte = (uint8_t*)(&sdu_pP->data[data_offset]);
     l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_remaining_size = l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_size;
     l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_segmented_size = 0;
@@ -1264,40 +1271,40 @@ rlc_am_data_req (
           conf,
           mui);
   } else {
-#if MESSAGE_CHART_GENERATOR
-    mui         = ((struct rlc_am_data_req*) (sdu_pP->data))->mui;
-    data_offset = ((struct rlc_am_data_req*) (sdu_pP->data))->data_offset;
-    data_size   = ((struct rlc_am_data_req*) (sdu_pP->data))->data_size;
-    MSC_LOG_RX_DISCARDED_MESSAGE(
-      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
-      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
-      (const char*)(&sdu_pP->data[data_offset]),
-      data_size,
-      MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-REQ size %u mui %u",
-      MSC_AS_TIME_ARGS(ctxt_pP),
-      PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
-      data_size,
-      mui);
-#endif
-    LOG_W(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ BUFFER FULL, NB SDU %d current_sdu_index=%d next_sdu_index=%d size_input_sdus_buffer=%d\n",
-          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
-          l_rlc_p->nb_sdu,
-          l_rlc_p->current_sdu_index,
-          l_rlc_p->next_sdu_index,
-          RLC_AM_SDU_CONTROL_BUFFER_SIZE);
-    LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n",
-          l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block, l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented);
-    l_rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
-    l_rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
-    free_mem_block (sdu_pP, __func__);
-#if STOP_ON_IP_TRAFFIC_OVERLOAD
-    AssertFatal(0, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ size %d Bytes, SDU DROPPED, INPUT BUFFER OVERFLOW NB SDU %d current_sdu_index=%d next_sdu_index=%d \n",
-                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
-                data_size,
-                l_rlc_p->nb_sdu,
-                l_rlc_p->current_sdu_index,
-                l_rlc_p->next_sdu_index);
-#endif
+// #if MESSAGE_CHART_GENERATOR
+//     mui         = ((struct rlc_am_data_req*) (sdu_pP->data))->mui;
+//     data_offset = ((struct rlc_am_data_req*) (sdu_pP->data))->data_offset;
+//     data_size   = ((struct rlc_am_data_req*) (sdu_pP->data))->data_size;
+//     MSC_LOG_RX_DISCARDED_MESSAGE(
+//       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+//       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+//       (const char*)(&sdu_pP->data[data_offset]),
+//       data_size,
+//       MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-REQ size %u mui %u",
+//       MSC_AS_TIME_ARGS(ctxt_pP),
+//       PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+//       data_size,
+//       mui);
+// #endif
+//     LOG_W(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ BUFFER FULL, NB SDU %d current_sdu_index=%d next_sdu_index=%d size_input_sdus_buffer=%d\n",
+//           PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
+//           l_rlc_p->nb_sdu,
+//           l_rlc_p->current_sdu_index,
+//           l_rlc_p->next_sdu_index,
+//           RLC_AM_SDU_CONTROL_BUFFER_SIZE);
+//     LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n",
+//           l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block, l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented);
+//     l_rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
+//     l_rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
+//     free_mem_block (sdu_pP, __func__);
+// #if STOP_ON_IP_TRAFFIC_OVERLOAD
+//     AssertFatal(0, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ size %d Bytes, SDU DROPPED, INPUT BUFFER OVERFLOW NB SDU %d current_sdu_index=%d next_sdu_index=%d \n",
+//                 PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
+//                 data_size,
+//                 l_rlc_p->nb_sdu,
+//                 l_rlc_p->current_sdu_index,
+//                 l_rlc_p->next_sdu_index);
+// #endif
   }
 
   RLC_AM_MUTEX_UNLOCK(&l_rlc_p->lock_input_sdus);

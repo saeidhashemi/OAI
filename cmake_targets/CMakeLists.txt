@@ -858,6 +858,8 @@ if (FLEXRAN_AGENT_SB_IF)
     ${FLPT_MSG_DIR}/config_messages.proto
     ${FLPT_MSG_DIR}/config_common.proto
     ${FLPT_MSG_DIR}/control_delegation.proto
+    ${FLPT_MSG_DIR}/rrc_trigger_measure.proto
+   
     )
 
   set(FLPT_C_DIR ${protobuf_generated_dir}/${FLPTDIR})
@@ -875,6 +877,8 @@ if (FLEXRAN_AGENT_SB_IF)
     ${FLPT_C_DIR}/config_messages.pb-c.c
     ${FLPT_C_DIR}/config_common.pb-c.c
     ${FLPT_C_DIR}/control_delegation.pb-c.c
+    ${FLPT_C_DIR}/rrc_trigger_measure.pb-c.c
+
     )
 
   file(GLOB flpt_h ${FLPT_C_DIR}/*.h)

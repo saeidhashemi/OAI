@@ -39,6 +39,7 @@
 
 #include "SCHED/defs.h"
 #include "RRC/LITE/extern.h"
+ #include "RRC/LITE/defs.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "rrc_eNB_UE_context.h"
 
@@ -1201,12 +1202,33 @@ int flexran_agent_destroy_control_delegation(Protocol__FlexranMessage *msg) {
  */
 
 
+
 int flexran_agent_reconfiguration(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
+
+  protocol_ctxt_t  ctxt;
+
   Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
   Protocol__FlexAgentReconfiguration *agent_reconfiguration_msg = input->agent_reconfiguration_msg;
 
-  apply_reconfiguration_policy(mod_id, agent_reconfiguration_msg->policy, strlen(agent_reconfiguration_msg->policy));
+  agent_reconf_rrc *reconf_param = malloc(sizeof(agent_reconf_rrc));
 
+  
+  // apply_reconfiguration_policy(mod_id, agent_reconfiguration_msg->policy, strlen(agent_reconfiguration_msg->policy));
+
+  reconf_param->trigger_policy = agent_reconfiguration_msg->rrc_trigger;
+
+  struct rrc_eNB_ue_context_s   *ue_context_p = NULL;
+
+  RB_FOREACH(ue_context_p, rrc_ue_tree_s, &(eNB_rrc_inst[mod_id].rrc_ue_head)){
+
+
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, mod_id, ENB_FLAG_YES, ue_context_p->ue_context.rnti, flexran_get_current_frame(mod_id), flexran_get_current_subframe (mod_id), mod_id);
+  
+  flexran_rrc_eNB_generate_defaultRRCConnectionReconfiguration(&ctxt, ue_context_p, 0, reconf_param);  
+
+  }
+  
+  
   *msg = NULL;
   return 0;
 }

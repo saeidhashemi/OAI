@@ -523,10 +523,10 @@ if (agent_check_layer[0]){
 
   if(agent_check_layer[1]){    
 
-    // if (flexran_agent_rrc_stats_reply(enb_id, report_config, ue_report, cell_report) < 0 ){  
-    //   err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
-    //   goto error;
-    // }
+  //   if (flexran_agent_rrc_stats_reply(enb_id, report_config, ue_report, cell_report) < 0 ){  
+  //     err_code = PROTOCOL__FLEXRAN_ERR__MSG_BUILD;
+  //     goto error;
+  //   }
 
   }
 
@@ -735,8 +735,8 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
                                         request_config.period = 0;
 
                                         /* Need to make sure that the ue flags are saved (Bug) */
-                                        // if (report_config.nr_ue == 0) {
-                                       //         report_config.nr_ue = 1;
+                                        if (report_config.nr_ue == 0) {
+                                               report_config.nr_ue = 1;
                                        //         report_config.ue_report_type = (ue_report_type_t *) malloc(sizeof(ue_report_type_t));
                                        //          if (report_config.ue_report_type == NULL) {
                                        //                  // TODO: Add appropriate error code
@@ -745,7 +745,7 @@ int flexran_agent_handle_stats(mid_t mod_id, const void *params, Protocol__Flexr
                                        //          }
                                        //          report_config.ue_report_type[0].ue_rnti = 0; // Dummy value
                                        //          report_config.ue_report_type[0].ue_report_flags = ue_flags;
-                                       //   }
+                                         }
 
                                           request_config.config = &report_config;
 

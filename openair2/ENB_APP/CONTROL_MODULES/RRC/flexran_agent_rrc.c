@@ -81,84 +81,87 @@ int flexran_agent_rrc_stats_reply(mid_t mod_id,
   
 
   /* Allocate memory for list of UE reports */
-  if (report_config->nr_ue > 0) {
+  // if (report_config->nr_ue > 0) {
 
-          for (i = 0; i < report_config->nr_ue; i++) {
+  //         for (i = 0; i < report_config->nr_ue; i++) {
 
-                /* Check the types of reports that need to be constructed based on flag values */
+  //               /* Check the types of reports that need to be constructed based on flag values */
 
                              
                  
-                     if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_RRC_MEASUREMENTS) {
-                            //TODO: Fill in the actual paging buffer status report. For this field to be valid, the RNTI
+  //                    if (report_config->ue_report_type[i].ue_report_flags & PROTOCOL__FLEX_UE_STATS_TYPE__FLUST_RRC_MEASUREMENTS) {
+  //                           //TODO: Fill in the actual paging buffer status report. For this field to be valid, the RNTI
                             
-                            Protocol__FlexRrcMeasurements *rrc_measurements;
-                            rrc_measurements = malloc(sizeof(Protocol__FlexRrcMeasurements));
-                            if (rrc_measurements == NULL)
-                              goto error;
+  //                           Protocol__FlexRrcMeasurements *rrc_measurements;
+  //                           rrc_measurements = malloc(sizeof(Protocol__FlexRrcMeasurements));
+  //                           if (rrc_measurements == NULL)
+  //                             goto error;
 
-                            protocol__flex_rrc_measurements__init(rrc_measurements);
+  //                           protocol__flex_rrc_measurements__init(rrc_measurements);
                             
-                            rrc_measurements->measid = 1 ; //flexran_get_measId(i); Fore the Moment ...
-                            rrc_measurements->has_measid = 1;
+  //                           rrc_measurements->measid = 1 ; //flexran_get_measId(i); Fore the Moment ...
+  //                           rrc_measurements->has_measid = 1;
 
-                            rrc_measurements->pcell_rsrp = flexran_get_rsrp(0, 0, 0) ; // flexran_get_Ul_rssi(0,0,0); // Should be changed in side ...
-                            rrc_measurements->has_pcell_rsrp = 1;
+  //                           rrc_measurements->pcell_rsrp = flexran_get_rsrp(0, 0, 0) ; // flexran_get_Ul_rssi(0,0,0); // Should be changed in side ...
+  //                           rrc_measurements->has_pcell_rsrp = 1;
 
-                            rrc_measurements->pcell_rsrq = flexran_get_rsrq(0, 0, 0); // Should be changed inside ...                          
-                            rrc_measurements->has_pcell_rsrq = 1 ;
-                            //Provide a report for each pending paging message
-                            Protocol__FlexNeighCellsMeasurements *n_meas;
-                            n_meas = malloc(sizeof(Protocol__FlexNeighCellsMeasurements *));
-                            if (n_meas == NULL)
-                              goto error;
+  //                           rrc_measurements->pcell_rsrq = flexran_get_rsrq(0, 0, 0); // Should be changed inside ...                          
+  //                           rrc_measurements->has_pcell_rsrq = 1 ;
+  //                           //Provide a report for each pending paging message
+  //                           Protocol__FlexNeighCellsMeasurements *n_meas;
+  //                           n_meas = malloc(sizeof(Protocol__FlexNeighCellsMeasurements *));
+  //                           if (n_meas == NULL)
+  //                             goto error;
 
                             
                                                       
-                            ue_report[i]->rrc_measurements = rrc_measurements;
-                    }
+  //                           ue_report[i]->rrc_measurements = rrc_measurements;
+  //                   }
 
 
                             
-             }       
+  //            }       
 
       
          
-     } 
+  //    } 
 
-  /* Allocate memory for list of cell reports */
-  if (report_config->nr_cc > 0) {
+  // /* Allocate memory for list of cell reports */
+  // if (report_config->nr_cc > 0) {
     
-            // Fill in the Cell reports
-            for (i = 0; i < report_config->nr_cc; i++) {
+  //           // Fill in the Cell reports
+  //           for (i = 0; i < report_config->nr_cc; i++) {
 
-                      /* Check flag for creation of noise and interference report */
-                      if(report_config->cc_report_type[i].cc_report_flags & PROTOCOL__FLEX_CELL_STATS_TYPE__FLCST_NOISE_INTERFERENCE) {
-                            // TODO: Fill in the actual noise and interference report for this cell
-                            Protocol__FlexNoiseInterferenceReport *ni_report;
-                            ni_report = malloc(sizeof(Protocol__FlexNoiseInterferenceReport));
-                            if(ni_report == NULL)
-                              goto error;
-                            protocol__flex_noise_interference_report__init(ni_report);
-                            // Current frame and subframe number
-                            ni_report->sfn_sf = flexran_get_sfn_sf(enb_id);
-                            ni_report->has_sfn_sf = 1;
-                            //TODO:Received interference power in dbm
-                            ni_report->rip = 0;
-                            ni_report->has_rip = 1;
-                            //TODO:Thermal noise power in dbm
-                            ni_report->tnp = 0;
-                            ni_report->has_tnp = 1;
+  //                     /* Check flag for creation of noise and interference report */
+  //                     if(report_config->cc_report_type[i].cc_report_flags & PROTOCOL__FLEX_CELL_STATS_TYPE__FLCST_NOISE_INTERFERENCE) {
+  //                           // TODO: Fill in the actual noise and interference report for this cell
+  //                           Protocol__FlexNoiseInterferenceReport *ni_report;
+  //                           ni_report = malloc(sizeof(Protocol__FlexNoiseInterferenceReport));
+  //                           if(ni_report == NULL)
+  //                             goto error;
+  //                           protocol__flex_noise_interference_report__init(ni_report);
+  //                           // Current frame and subframe number
+  //                           ni_report->sfn_sf = flexran_get_sfn_sf(enb_id);
+  //                           ni_report->has_sfn_sf = 1;
+  //                           //TODO:Received interference power in dbm
+  //                           ni_report->rip = 0;
+  //                           ni_report->has_rip = 1;
+  //                           //TODO:Thermal noise power in dbm
+  //                           ni_report->tnp = 0;
+  //                           ni_report->has_tnp = 1;
 
-                            ni_report->p0_nominal_pucch = flexran_get_p0_nominal_pucch(enb_id, 0);
-                            ni_report->has_p0_nominal_pucch = 1;
-                            cell_report[i]->noise_inter_report = ni_report;
-                      }
-            }
-            /* Add list of all cell reports to the message */
+  //                           ni_report->p0_nominal_pucch = flexran_get_p0_nominal_pucch(enb_id, 0);
+  //                           ni_report->has_p0_nominal_pucch = 1;
+  //                           cell_report[i]->noise_inter_report = ni_report;
+  //                     }
+  //           }
+  //           /* Add list of all cell reports to the message */
 
             
-  }
+  // }
+
+
+   
 
   return 0;
 
@@ -504,10 +507,10 @@ int flexran_trigger_rrc_measurements (mid_t mod_id, MeasResults_t*  measResults)
           goto error;
 
       protocol__flex_cell_stats_report__init(cell_report[i]);
-      // cell_report[i]->carrier_index = report_config->cc_report_type[i].cc_id;
-      // cell_report[i]->has_carrier_index = 1;
-      // cell_report[i]->flags = report_config->cc_report_type[i].cc_report_flags;
-      // cell_report[i]->has_flags = 1;
+    //   cell_report[i]->carrier_index = report_config->cc_report_type[i].cc_id;
+    //   cell_report[i]->has_carrier_index = 1;
+    //   cell_report[i]->flags = report_config->cc_report_type[i].cc_report_flags;
+    //   cell_report[i]->has_flags = 1;
      }
  
 
@@ -528,6 +531,9 @@ int flexran_trigger_rrc_measurements (mid_t mod_id, MeasResults_t*  measResults)
 
     ue_report[0]->rrc_measurements = rrc_measurements;
 
+
+
+   
 
   // #else
   //   repl->has_pcell_rsrp = 1;

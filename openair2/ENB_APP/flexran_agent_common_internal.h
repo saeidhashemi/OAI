@@ -35,7 +35,7 @@
 
 int apply_reconfiguration_policy(mid_t mod_id, const char *policy, size_t policy_length);
 
-int apply_parameter_modification(void *parameter, yaml_parser_t *parser);
+int flexran_apply_parameter_modification(void *parameter, yaml_parser_t *parser);
 
 // This can be used when parsing for a specific system that is not yet implmeneted
 // in order to skip its configuration, without affecting the rest

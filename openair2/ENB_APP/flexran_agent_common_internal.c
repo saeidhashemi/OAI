@@ -332,7 +332,7 @@ int skip_parameter_modification(yaml_parser_t *parser) {
   return -1;
 }
 
-int apply_parameter_modification(void *parameter, yaml_parser_t *parser) {
+int flexran_apply_parameter_modification(void *parameter, yaml_parser_t *parser) {
   yaml_event_t event;
   
   int done = 0;

@@ -177,6 +177,18 @@ typedef struct {
 
 } flexran_agent_info_t;
 
+/*
+rrc triggering
+ */
+
+
+typedef struct {
+   char   * trigger_policy;
+   uint32_t report_interval;
+   uint32_t report_amount;
+
+} agent_reconf_rrc;
+
 
 /* These structs will be used to give
    instructions for the type of stats reports
