@@ -136,11 +136,11 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  protocol__flex_rlc_bsr__init(rlc_reports[j]);
                           	  rlc_reports[j]->lc_id = j+1;
                           	  rlc_reports[j]->has_lc_id = 1;
-                          	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id, i, j+1, "bytes_buffer");
+                          	  rlc_reports[j]->tx_queue_size = flexran_get_tx_queue_size(enb_id, i, j + 1, "bytes_buffer");
                           	  rlc_reports[j]->has_tx_queue_size = 1;
 
                           	  //TODO:Set tx queue head of line delay in ms
-                          	  rlc_reports[j]->tx_queue_hol_delay = flexran_get_tx_queue_size(enb_id, i, j+1, "head_line");;
+                          	  rlc_reports[j]->tx_queue_hol_delay = flexran_get_tx_queue_size(enb_id, i, j + 1, "head_line");
                           	  rlc_reports[j]->has_tx_queue_hol_delay = 1;
                           	  //TODO:Set retransmission queue size in bytes
                           	  rlc_reports[j]->retransmission_queue_size = 10;
@@ -149,7 +149,7 @@ int flexran_agent_mac_stats_reply(mid_t mod_id,
                           	  rlc_reports[j]->retransmission_queue_hol_delay = 100;
                           	  rlc_reports[j]->has_retransmission_queue_hol_delay = 0;
                           	  //TODO DONE:Set current size of the pending message in bytes
-                          	  rlc_reports[j]->status_pdu_size = flexran_get_tx_queue_size(enb_id, i, j+1, "pdu_buffer");;
+                          	  rlc_reports[j]->status_pdu_size = flexran_get_hol_delay(enb_id, i, j + 1);
                           	  rlc_reports[j]->has_status_pdu_size = 1;
 
                       	}
