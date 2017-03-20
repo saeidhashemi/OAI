@@ -2202,6 +2202,8 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 }
 
 
+#if defined(FLEXRAN_AGENT_SB_IF)
+
 //-----------------------------------------------------------------------------
 void
 flexran_rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* const ctxt_pP,
@@ -2792,6 +2794,7 @@ flexran_rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt
          PDCP_TRANSMISSION_MODE_CONTROL);
 }
 
+#endif //FLEXRAN_AGENT_SB_IF
 
 
 //-----------------------------------------------------------------------------

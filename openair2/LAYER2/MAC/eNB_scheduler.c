@@ -1151,10 +1151,13 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   //   agent_mac_xface[module_idP]->flexran_agent_send_update_mac_stats(module_idP);
   // }
 
+#if defined(FLEXRAN_AGENT_SB_IF)
+#ifndef DISABLE_CONT_STATS
+  
   flexran_agent_send_update_stats(module_idP);
   
-// #endif
-// #endif
+#endif
+#endif
 
   /*
   int dummy=0;
