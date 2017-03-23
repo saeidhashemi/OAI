@@ -59,6 +59,8 @@ flexran_agent_message_decoded_callback agent_messages_callback[][3] = {
   {0, 0, 0}, /*PROTOCOL__FLEXRAN_MESSAGE__MSG_UE_STATE_CHANGE_MSG*/
   {flexran_agent_control_delegation, 0, 0}, /*PROTOCOL__FLEXRAN_MESSAGE__MSG_CONTROL_DELEGATION_MSG*/
   {flexran_agent_reconfiguration, 0, 0}, /*PROTOCOL__FLEXRAN_MESSAGE__MSG_AGENT_RECONFIGURATION_MSG*/
+  {flexran_agent_rrc_measurement, 0, 0}, /*PROTOCOL__FLEXRAN_MESSAGE__MSG_RRC_TRIGGERING_MSG*/
+
 };
 
 flexran_agent_message_destruction_callback message_destruction_callback[] = {
@@ -79,6 +81,7 @@ flexran_agent_message_destruction_callback message_destruction_callback[] = {
   flexran_agent_destroy_ue_state_change,
   flexran_agent_destroy_control_delegation,
   flexran_agent_destroy_agent_reconfiguration,
+  flexran_agent_destroy_rrc_measurement,
 };
 
 /* static const char *flexran_agent_direction2String[] = { */

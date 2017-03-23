@@ -1187,35 +1187,22 @@ int flexran_agent_control_delegation(mid_t mod_id, const void *params, Protocol_
   return -1;
 }
 
-
-
 int flexran_agent_destroy_control_delegation(Protocol__FlexranMessage *msg) {
   /*TODO: Dealocate memory for a dynamically allocated control delegation message*/
 }
 
 
-
-/*
- * ************************************
- * Agent Reconfiguration 
- * ************************************
- */
-
-
-
-int flexran_agent_reconfiguration(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
+int flexran_agent_rrc_measurement(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
 
   protocol_ctxt_t  ctxt;
 
   Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
-  Protocol__FlexAgentReconfiguration *agent_reconfiguration_msg = input->agent_reconfiguration_msg;
+  Protocol__FlexRrcTriggering *triggering = input->rrc_triggering;
 
   agent_reconf_rrc *reconf_param = malloc(sizeof(agent_reconf_rrc));
-
   
-  // apply_reconfiguration_policy(mod_id, agent_reconfiguration_msg->policy, strlen(agent_reconfiguration_msg->policy));
 
-  reconf_param->trigger_policy = agent_reconfiguration_msg->rrc_trigger;
+  reconf_param->trigger_policy = triggering->rrc_trigger;
 
   struct rrc_eNB_ue_context_s   *ue_context_p = NULL;
 
@@ -1228,6 +1215,32 @@ int flexran_agent_reconfiguration(mid_t mod_id, const void *params, Protocol__Fl
 
   }
   
+  
+  *msg = NULL;
+  return 0;
+}
+
+
+int flexran_agent_destroy_rrc_measurement(Protocol__FlexranMessage *msg){
+    
+}
+
+/*
+ * ************************************
+ * Agent Reconfiguration 
+ * ************************************
+ */
+
+
+
+int flexran_agent_reconfiguration(mid_t mod_id, const void *params, Protocol__FlexranMessage **msg) {
+
+  Protocol__FlexranMessage *input = (Protocol__FlexranMessage *)params;
+  Protocol__FlexAgentReconfiguration *agent_reconfiguration_msg = input->agent_reconfiguration_msg;  
+
+  
+  apply_reconfiguration_policy(mod_id, agent_reconfiguration_msg->policy, strlen(agent_reconfiguration_msg->policy));
+
   
   *msg = NULL;
   return 0;

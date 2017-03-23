@@ -29,6 +29,7 @@ message flexran_message {
 	      flex_ue_state_change ue_state_change_msg = 15;
 	      flex_control_delegation control_delegation_msg = 16;
 	      flex_agent_reconfiguration agent_reconfiguration_msg = 17;
+        flex_rrc_triggering rrc_triggering = 18;
 	}
 }
 
@@ -185,6 +186,14 @@ message flex_control_delegation {
 	optional string name = 4;		// The delegated functions names ordered based on bitmap flags
 }
 
+message flex_rrc_triggering {
+
+  optional flex_header header = 1;
+  optional string rrc_trigger = 2;        
+}
+
+
+
 //
 // Agent reconfiguration message
 //
@@ -192,8 +201,6 @@ message flex_control_delegation {
 message flex_agent_reconfiguration {
 	optional flex_header header = 1;
 	optional string policy = 2;		// The policy changes using YAML syntax in string format
-	//optional flex_rrc_trigger rrc_trig = 3;	
-	optional string rrc_trigger = 4;
 }
 
 // Extensions of the echo request and reply
