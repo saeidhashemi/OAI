@@ -1067,7 +1067,7 @@ void rx_phich(PHY_VARS_UE *ue,
 
 
   LTE_DL_FRAME_PARMS *frame_parms=&ue->frame_parms;
-  LTE_UE_PDCCH **pdcch_vars = ue->pdcch_vars;
+  LTE_UE_PDCCH **pdcch_vars = &ue->pdcch_vars[subframe & 0x1][eNB_id];
 
   //  uint8_t HI;
   uint8_t harq_pid = phich_subframe_to_harq_pid(frame_parms,proc->frame_rx,subframe);
@@ -1395,7 +1395,7 @@ void rx_phich(PHY_VARS_UE *ue,
             subframe,
             HI16,
             nseq_PHICH,
-            ngroup_PHICH,ulsch->harq_processes[harq_pid]->round+1,
+            ngroup_PHICH,
             ulsch->Mlimit);
       //#endif
 
