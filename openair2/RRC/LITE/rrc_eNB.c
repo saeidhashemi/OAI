@@ -111,6 +111,105 @@ extern uint16_t                     two_tier_hexagonal_cellIds[7];
 
 mui_t                               rrc_eNB_mui = 0;
 
+
+/* Holds all the information about DL of each of EUTRA FDD bands.
+ */
+struct fdd_bands_dl_i {
+  /* Band number of the EUTRA band. */
+  int band;
+  /* EARFCN lowest value in DL for this band. */
+  uint32_t cn_DLl;
+  /* EARFCN highest value in DL for this band. */
+  uint32_t cn_DLh;
+  /* Lowest frequency in DL for this band (MHz). */
+  float f_DLl;
+};
+
+
+/* Lookup for DL of each of EUTRA FDD bands.
+ */
+struct fdd_bands_dl_i fdd_bands_dl[38] = {
+  {.band = 1, .cn_DLl = 0, .cn_DLh = 599, .f_DLl = 2110},
+  {.band = 2, .cn_DLl = 600, .cn_DLh = 1199, .f_DLl = 1930},
+  {.band = 3, .cn_DLl = 1200, .cn_DLh = 1949, .f_DLl = 1805},
+  {.band = 4, .cn_DLl = 1950, .cn_DLh = 2399, .f_DLl = 2110},
+  {.band = 5, .cn_DLl = 2400, .cn_DLh = 2649, .f_DLl = 869},
+  {.band = 6, .cn_DLl = 2650, .cn_DLh = 2749, .f_DLl = 875},
+  {.band = 7, .cn_DLl = 2750, .cn_DLh = 3449, .f_DLl = 2620},
+  {.band = 8, .cn_DLl = 3450, .cn_DLh = 3799, .f_DLl = 925},
+  {.band = 9, .cn_DLl = 3800, .cn_DLh = 4149, .f_DLl = 1844.9},
+  {.band = 10, .cn_DLl = 4150, .cn_DLh = 4749, .f_DLl = 2110},
+  {.band = 11, .cn_DLl = 4750, .cn_DLh = 4949, .f_DLl = 1475.9},
+  {.band = 12, .cn_DLl = 5010, .cn_DLh = 5179, .f_DLl = 729},
+  {.band = 13, .cn_DLl = 5180, .cn_DLh = 5279, .f_DLl = 746},
+  {.band = 14, .cn_DLl = 5280, .cn_DLh = 5379, .f_DLl = 758},
+  {.band = 17, .cn_DLl = 5730, .cn_DLh = 5849, .f_DLl = 734},
+  {.band = 18, .cn_DLl = 5850, .cn_DLh = 5999, .f_DLl = 860},
+  {.band = 19, .cn_DLl = 6000, .cn_DLh = 6149, .f_DLl = 875},
+  {.band = 20, .cn_DLl = 6150, .cn_DLh = 6449, .f_DLl = 791},
+  {.band = 21, .cn_DLl = 6450, .cn_DLh = 6599, .f_DLl = 1495.9},
+  {.band = 22, .cn_DLl = 6600, .cn_DLh = 7399, .f_DLl = 3510},
+  {.band = 23, .cn_DLl = 7500, .cn_DLh = 7699, .f_DLl = 2180},
+  {.band = 24, .cn_DLl = 7700, .cn_DLh = 8039, .f_DLl = 1525},
+  {.band = 25, .cn_DLl = 8040, .cn_DLh = 8689, .f_DLl = 1930},
+  {.band = 26, .cn_DLl = 8690, .cn_DLh = 9039, .f_DLl = 859},
+  {.band = 27, .cn_DLl = 9040, .cn_DLh = 9209, .f_DLl = 852},
+  {.band = 28, .cn_DLl = 9210, .cn_DLh = 9659, .f_DLl = 758},
+  {.band = 29, .cn_DLl = 9660, .cn_DLh = 9769, .f_DLl = 717},
+  {.band = 30, .cn_DLl = 9770, .cn_DLh = 9869, .f_DLl = 2350},
+  {.band = 31, .cn_DLl = 9870, .cn_DLh = 9919, .f_DLl = 462.5},
+  {.band = 32, .cn_DLl = 9920, .cn_DLh = 10359, .f_DLl = 1452},
+  {.band = 65, .cn_DLl = 65536, .cn_DLh = 66435, .f_DLl = 2110},
+  {.band = 66, .cn_DLl = 66436, .cn_DLh = 67335, .f_DLl = 2110},
+  {.band = 67, .cn_DLl = 67336, .cn_DLh = 67535, .f_DLl = 738},
+  {.band = 68, .cn_DLl = 67536, .cn_DLh = 67835, .f_DLl = 753},
+  {.band = 69, .cn_DLl = 67386, .cn_DLh = 68335, .f_DLl = 2570},
+  {.band = 70, .cn_DLl = 68336, .cn_DLh = 68585, .f_DLl = 1995},
+  {.band = 252, .cn_DLl = 255144, .cn_DLh = 256143, .f_DLl = 5150},
+  {.band = 255, .cn_DLl = 260894, .cn_DLh = 262143, .f_DLl = 5725}
+};
+
+typedef struct{
+
+    int band_id;
+    int earfcn;
+
+
+} rrc_meas_triggering_t;
+
+
+rrc_meas_triggering_t * rrc_meas_obj;
+
+
+void get_fdd_band_dl_freq (int band_array_index, double freq) {
+  
+  int earfcn;
+  earfcn =  10 * freq - 10 * fdd_bands_dl[band_array_index].f_DLl  - fdd_bands_dl[band_array_index].cn_DLl;
+  rrc_meas_obj->earfcn = earfcn;    
+  rrc_meas_obj->band_id = band_array_index;    
+}
+
+
+/*
+   This function can be usefull for Radio Resource Control layer
+   To automatize the parsing procedure fror eNodeB processing.   
+*/
+
+void Import_RRC_Parameters(RrcConfigurationReq * configuration){
+
+
+     int CC_id = 0; /*This is should be managed from upper control*/
+
+     /*Get earfcn from (eutra_band and Downlink Frequency*/
+
+     get_fdd_band_dl_freq(configuration->eutra_band[CC_id], configuration->downlink_frequency[CC_id]);
+
+}
+
+
+
+
+
 //-----------------------------------------------------------------------------
 static void
 init_SI(
@@ -1851,7 +1950,7 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 
   MeasObj->measObjectId = 1;
   MeasObj->measObject.present = MeasObjectToAddMod__measObject_PR_measObjectEUTRA;
-  MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 3350; //band 7, 2.68GHz
+  MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = rrc_meas_obj->earfcn; //band 7, 2.68GHz 
   //MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 36090; //band 33, 1.909GHz
   MeasObj->measObject.choice.measObjectEUTRA.allowedMeasBandwidth = AllowedMeasBandwidth_mbw25;
   MeasObj->measObject.choice.measObjectEUTRA.presenceAntennaPort1 = 1;
@@ -2201,8 +2300,6 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t* cons
 	       PDCP_TRANSMISSION_MODE_CONTROL);
 }
 
-
-#if defined(FLEXRAN_AGENT_SB_IF)
 
 //-----------------------------------------------------------------------------
 void
@@ -2794,7 +2891,6 @@ flexran_rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt
          PDCP_TRANSMISSION_MODE_CONTROL);
 }
 
-#endif //FLEXRAN_AGENT_SB_IF
 
 
 //-----------------------------------------------------------------------------
@@ -2896,7 +2992,9 @@ rrc_eNB_process_MeasurementReport(
 
   // if (measResults2->measResultNeighCells->choice.measResultListEUTRA.list.count > 0) {
       
-  //   LOG_I(RRC, "Physical Cell Id %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->physCellId);
+    // LOG_W(RRC, "Physical Cell Id %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->physCellId);
+    // LOG_W(RRC, "neighCellConfig %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->cgi_Info->trackingAreaCode);
+    // LOG_W(RRC, "neighCellConfig %d\n", measResults2->measResultNeighCells->choice.measResultListEUTRA.list.array[0]->cgi_Info);
 /*    LOG_I(RRC, "RSRP of Target %d\n",
           (int)*(measResults2->measResultNeighCells.choice.measResultListEUTRA.list.array[0]->
                  measResult.rsrpResult));
@@ -4636,6 +4734,10 @@ while ( eNB_rrc_inst == NULL ) {
 
 #endif
 
+  /*Import RRC Information*/
+  Import_RRC_Parameters(configuration);
+
+
 #ifdef NO_RRM                   //init ch SRB0, SRB1 & BDTCH
   openair_rrc_on(&ctxt);
 #else
@@ -4733,14 +4835,14 @@ rrc_eNB_decode_ccch(
     switch (ul_ccch_msg->message.choice.c1.present) {
 
     case UL_CCCH_MessageType__c1_PR_NOTHING:
-
+    
       LOG_I(RRC,
             PROTOCOL_RRC_CTXT_FMT" Received PR_NOTHING on UL-CCCH-Message\n",
             PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
       break;
 
     case UL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentRequest:
-
+    
       T(T_ENB_RRC_CONNECTION_REESTABLISHMENT_REQUEST, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
         T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -4786,7 +4888,7 @@ rrc_eNB_decode_ccch(
       break;
 
     case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
-
+    
       T(T_ENB_RRC_CONNECTION_REQUEST, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
         T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -4823,7 +4925,7 @@ rrc_eNB_decode_ccch(
         rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
         
           if (InitialUE_Identity_PR_randomValue == rrcConnectionRequest->ue_Identity.present) {
-
+            
             AssertFatal(rrcConnectionRequest->ue_Identity.choice.randomValue.size == 5,
                         "wrong InitialUE-Identity randomValue size, expected 5, provided %d",
                         rrcConnectionRequest->ue_Identity.choice.randomValue.size);
@@ -4834,7 +4936,7 @@ rrc_eNB_decode_ccch(
              * the current one must be removed from MAC/PHY (zombie UE)
              */
             if ((ue_context_p = rrc_eNB_ue_context_random_exist(ctxt_pP, random_value))) {
-
+            
               LOG_W(RRC, "new UE rnti %x (coming with random value) is already there as UE %x, removing %x from MAC/PHY\n",
                     ctxt_pP->rnti, ue_context_p->ue_context.rnti, ctxt_pP->rnti);
 	      rrc_mac_remove_ue(ctxt_pP->module_id, ctxt_pP->rnti);
@@ -4844,7 +4946,7 @@ rrc_eNB_decode_ccch(
               ue_context_p = rrc_eNB_get_next_free_ue_context(ctxt_pP, random_value);
             }
           } else if (InitialUE_Identity_PR_s_TMSI == rrcConnectionRequest->ue_Identity.present) {
-
+            
             /* Save s-TMSI */
             S_TMSI_t   s_TMSI = rrcConnectionRequest->ue_Identity.choice.s_TMSI;
             mme_code_t mme_code = BIT_STRING_to_uint8(&s_TMSI.mmec);
@@ -4892,7 +4994,7 @@ rrc_eNB_decode_ccch(
               ue_context_p->ue_context.Initialue_identity_s_TMSI.m_tmsi,
               ue_context_p->ue_context.random_ue_identity);
           } else {
-
+            
             LOG_E(RRC,
                   PROTOCOL_RRC_CTXT_UE_FMT" RRCConnectionRequest without random UE identity or S-TMSI not supported, let's reject the UE\n",
                   PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP));
@@ -5134,15 +5236,15 @@ rrc_eNB_decode_dcch(
         switch (ul_dcch_msg->message.choice.c1.present) {
 
                 case UL_DCCH_MessageType__c1_PR_NOTHING:   /* No components present */
-
+    
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_csfbParametersRequestCDMA2000:
-
+    
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_measurementReport:
-
+    
                   LOG_D(RRC,
                         PROTOCOL_RRC_CTXT_UE_FMT" RLC RB %02d --- RLC_DATA_IND "
                         "%d bytes (measurementReport) ---> RRC_eNB\n",
@@ -5168,7 +5270,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_rrcConnectionReconfigurationComplete:
-
+    
 #ifdef RRC_MSG_PRINT
                   LOG_F(RRC,"[MSG] RRC Connection Reconfiguration Complete\n");
 
@@ -5259,7 +5361,7 @@ rrc_eNB_decode_dcch(
                       break;
 
                 case UL_DCCH_MessageType__c1_PR_rrcConnectionReestablishmentComplete:
-
+    
                   T(T_ENB_RRC_CONNECTION_REESTABLISHMENT_COMPLETE, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5292,7 +5394,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_rrcConnectionSetupComplete:
-
+    
 #ifdef RRC_MSG_PRINT
                   LOG_F(RRC,"[MSG] RRC Connection SetupComplete\n");
 
@@ -5348,7 +5450,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_securityModeComplete:
-
+    
 
                         T(T_ENB_RRC_SECURITY_MODE_COMPLETE, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                           T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
@@ -5395,7 +5497,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_securityModeFailure:
-
+    
                   T(T_ENB_RRC_SECURITY_MODE_FAILURE, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5436,7 +5538,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_ueCapabilityInformation:
-
+    
                   T(T_ENB_RRC_UE_CAPABILITY_INFORMATION, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5512,14 +5614,14 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_ulHandoverPreparationTransfer:
-
+    
                   T(T_ENB_RRC_UL_HANDOVER_PREPARATION_TRANSFER, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_ulInformationTransfer:
-
+    
                   T(T_ENB_RRC_UL_INFORMATION_TRANSFER, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5556,7 +5658,7 @@ rrc_eNB_decode_dcch(
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_counterCheckResponse:
-
+    
                   T(T_ENB_RRC_COUNTER_CHECK_RESPONSE, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5565,35 +5667,35 @@ rrc_eNB_decode_dcch(
             #ifdef Rel10
 
                 case UL_DCCH_MessageType__c1_PR_ueInformationResponse_r9:
-
+    
                   T(T_ENB_RRC_UE_INFORMATION_RESPONSE_R9, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_proximityIndication_r9:
-
+    
                   T(T_ENB_RRC_PROXIMITY_INDICATION_R9, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_rnReconfigurationComplete_r10:
-
+    
                   T(T_ENB_RRC_RECONFIGURATION_COMPLETE_R10, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_mbmsCountingResponse_r10:
-
+    
                   T(T_ENB_RRC_MBMS_COUNTING_RESPONSE_R10, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
                   break;
 
                 case UL_DCCH_MessageType__c1_PR_interFreqRSTDMeasurementIndication_r10:
-
+    
                   T(T_ENB_RRC_INTER_FREQ_RSTD_MEASUREMENT_INDICATION, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->frame),
                     T_INT(ctxt_pP->subframe), T_INT(ctxt_pP->rnti));
 
@@ -5694,7 +5796,7 @@ rrc_enb_task(
 
       /* Messages from MAC */
     case RRC_MAC_CCCH_DATA_IND:
-
+    
       PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt,
                                     instance,
                                     ENB_FLAG_YES,
@@ -5717,7 +5819,7 @@ rrc_enb_task(
 
       /* Messages from PDCP */
     case RRC_DCCH_DATA_IND:
-
+    
       PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt,
                                     instance,
                                     ENB_FLAG_YES,
@@ -5742,43 +5844,43 @@ rrc_enb_task(
 
       /* Messages from S1AP */
     case S1AP_DOWNLINK_NAS:
-
+    
       rrc_eNB_process_S1AP_DOWNLINK_NAS(msg_p, msg_name_p, instance, &rrc_eNB_mui);
       break;
 
     case S1AP_INITIAL_CONTEXT_SETUP_REQ:
-
+    
       rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p, msg_name_p, instance);
       break;
 
     case S1AP_UE_CTXT_MODIFICATION_REQ:
-
+    
       rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(msg_p, msg_name_p, instance);
       break;
 
     case S1AP_PAGING_IND:
-
+    
       LOG_E(RRC, "[eNB %d] Received not yet implemented message %s\n", instance, msg_name_p);
       break;
   
     case S1AP_E_RAB_SETUP_REQ: 
-
+    
       rrc_eNB_process_S1AP_E_RAB_SETUP_REQ(msg_p, msg_name_p, instance);
       LOG_D(RRC, "[eNB %d] Received the message %s\n", instance, msg_name_p);
       break;
     
     case S1AP_UE_CONTEXT_RELEASE_REQ:
-
+    
       rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ(msg_p, msg_name_p, instance);
       break;
 
     case S1AP_UE_CONTEXT_RELEASE_COMMAND:
-
+    
       rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND(msg_p, msg_name_p, instance);
       break;
 
     case GTPV1U_ENB_DELETE_TUNNEL_RESP:
-
+    
       /* Nothing to do. Apparently everything is done in S1AP processing */
       //LOG_I(RRC, "[eNB %d] Received message %s, not processed because procedure not synched\n",
       //instance, msg_name_p);
@@ -5788,7 +5890,7 @@ rrc_enb_task(
 
       /* Messages from eNB app */
     case RRC_CONFIGURATION_REQ:
-
+    
       LOG_I(RRC, "[eNB %d] Received %s\n", instance, msg_name_p);
       openair_rrc_eNB_configuration(ENB_INSTANCE_TO_MODULE_ID(instance), &RRC_CONFIGURATION_REQ(msg_p));
       break;
@@ -5796,7 +5898,7 @@ rrc_enb_task(
 #   if ENABLE_RAL
 
     case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
-
+    
       rrc_enb_ral_handle_configure_threshold_request(instance, msg_p);
       break;
 
