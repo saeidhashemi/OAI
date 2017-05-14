@@ -44,6 +44,7 @@
 #endif //PHY_EMUL
 #include "PHY_INTERFACE/defs.h"
 #include "RRC/LITE/defs.h"
+#include "defs-nb.h"
 
 extern const uint32_t BSR_TABLE[BSR_TABLE_SIZE];
 //extern uint32_t EBSR_Level[63];
@@ -63,6 +64,9 @@ extern UE_RRC_INST *UE_rrc_inst;
 extern UE_MAC_INST *ue_mac_inst;
 extern MAC_RLC_XFACE *Mac_rlc_xface;
 extern uint8_t Is_rrc_registered;
+
+//NB-IoT
+extern eNB_MAC_INST_NB *eNB_mac_inst_NB;
 
 extern eNB_ULSCH_INFO eNB_ulsch_info[NUMBER_OF_eNB_MAX][MAX_NUM_CCs][NUMBER_OF_UE_MAX]; // eNBxUE = 8x8
 extern eNB_DLSCH_INFO eNB_dlsch_info[NUMBER_OF_eNB_MAX][MAX_NUM_CCs][NUMBER_OF_UE_MAX]; // eNBxUE = 8x8
